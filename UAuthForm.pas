@@ -8,9 +8,6 @@ uses
 
 type
   TForm2 = class(TForm)
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
     Edit1: TEdit;
     Label4: TLabel;
     Label5: TLabel;
@@ -25,45 +22,43 @@ type
     Label11: TLabel;
     Label12: TLabel;
     Label13: TLabel;
+    btn1: TButton;
     procedure NextStep();
     procedure HideAll();
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure timer5secTimer(Sender: TObject);
+    procedure s(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
   end;
 
+
 var
   Form2: TForm2;
   CurrStep: string;
-  AvailSignalLetters : array [1..8] of string;
 
 implementation
 
 uses Unit1, ToolUnit;
 {$R *.dfm}
 
+var
+  // Доступные сигнальные буквы - по числу заданий всего
+  AvailSignalLetters : array [1..TasksCount] of string;
+  // Распределение (случайное) типов заданий
+  TestTypes : array [1..TasksCount] of integer;
+
 procedure TForm2.NextStep();
   var i: integer;
   wasError : boolean;
 begin
-  if (CurrStep = 'welcome') then
-  begin
-    CurrStep := 'personal';
-    HideAll();
-    Label3.Show;
-    Label4.Show;
-    Label5.Show;
-    Label6.Show;
-    ComboBox1.Show;
-    ComboBox2.Show;
-    Edit1.Show;
-    Edit1.setfocus;
-    Exit;
-  end;
+//  if (CurrStep = 'welcome') then
+//  begin
+ //   CurrStep := 'personal';
+ // end;
 
   if (CurrStep = 'personal') then
   begin
@@ -80,7 +75,6 @@ begin
         Break;
       end;
 
-    // CurrStep := 'personal';
     if (wasError) then
     begin
       Label7.Show;
@@ -99,6 +93,7 @@ begin
       Label8.show;
       Label9.show;
       timer5sec.Enabled:=true;
+      btn1.Show;
 
     end;
 
@@ -127,7 +122,7 @@ begin
       Label10.Caption:='Внимательно просматривайте буквы курсором мыши – слева направо строка за строкой. Ищите букву «н», которая стоит после идущих рядом букв «'+CurrPrefix+'». Если Вы находите букву «н», стоящую после этого сочетания букв, останавливайте на ней курсор и нажимайте на левую кнопку мыши. Если перед буквой «н» стоит другое сочетание букв, не останавливайте на ней курсор и не нажимайте на левую кнопку мыши.';
     Label10.Show;
     Label11.Show;
-    Label3.Show;
+    btn1.Show;
     Exit;
   end;
 
@@ -147,10 +142,11 @@ begin
     //Label11.Left:=Label11.Left+75;
 
     inc(CurrTaskNumber);
+    TestType := TestTypes[CurrTaskNumber]; // определяемся с тем какого типа будет задание - первого или второго
 
     // Определим сигнальную букву
     repeat
-      i:= 1+Random(8);
+      i:= 1+Random(TasksCount);
       CurrSignalLetter := AvailSignalLetters[i];
     until CurrSignalLetter<>'';
     AvailSignalLetters[i] := '';
@@ -158,20 +154,20 @@ begin
     if TestType=1 then
     begin
       CurrPrefix :='';
-      Label10.Caption:='Внимательно просматривайте буквы курсором мыши – слева направо строка за строкой. Ищите букву «'+CurrSignalLetter+'». Всякий раз, когда Вы находите букву «'+CurrSignalLetter+'», останавливайте на ней курсор и нажимайте на левую кнопку мыши. '
+      Label10.Caption:='Внимательно просматривайте буквы курсором – слева направо строка за строкой. Ищите букву «'+CurrSignalLetter+'». Всякий раз, когда Вы находите букву «'+CurrSignalLetter+'», останавливайте на ней курсор и нажимайте на клавишу «ПРОБЕЛ». '
     end
     else
     begin
       if (i mod 2 = 0) then CurrPrefix := RandomLetterG('')+RandomLetterG('')+RandomLetterG('')
                        else CurrPrefix := RandomLetterS('')+RandomLetterS('')+RandomLetterS('');
-      Label10.Caption:='Внимательно просматривайте буквы курсором мыши – слева направо строка за строкой. Ищите букву «'+CurrSignalLetter+'», которая стоит после идущих рядом букв «'+CurrPrefix+'». Если Вы находите букву «'+CurrSignalLetter+'», стоящую после этого сочетания букв, останавливайте на ней курсор и нажимайте на левую кнопку мыши. Если перед буквой «'+CurrSignalLetter+'» стоит другое сочетание букв, не останавливайте на ней курсор и не нажимайте на левую кнопку мыши. ';
+      Label10.Caption:='Внимательно просматривайте буквы курсором – слева направо строка за строкой. Ищите букву «'+CurrSignalLetter+'», которая стоит после идущих рядом букв «'+CurrPrefix+'». Если Вы находите букву «'+CurrSignalLetter+'», стоящую после этого сочетания букв, останавливайте на ней курсор и нажимайте на клавишу «ПРОБЕЛ». Если перед буквой «'+CurrSignalLetter+'» стоит другое сочетание букв, не останавливайте на ней курсор и не нажимайте на клавишу «ПРОБЕЛ». ';
     end;
 
-    Label10.Caption := Label10.Caption + 'Выполняйте задание как можно быстрее. Продолжительность задания – 5 минут.';
+    Label10.Caption := Label10.Caption + 'Выполняйте задание как можно быстрее. Продолжительность задания – 4 минуты.';
     Label11.Caption:='Задание '+inttostr(CurrTaskNumber);
     Label10.Show;
     Label11.Show;
-    Label3.Show;
+    btn1.Show;
     Exit;
   end;
 
@@ -188,10 +184,10 @@ begin
   begin
     HideAll();
 
-    if CurrTaskNumber = 8 then
+    if CurrTaskNumber = TasksCount then
     begin
       Label12.Caption := 'Вы успешно справились со всеми заданиями.';
-      Label3.Caption := 'Для выхода из программы нажмите Enter';
+      btn1.Caption := 'Для выхода из программы нажмите Enter';
       CurrStep := 'exit_to_windows';
     end
     else
@@ -202,7 +198,7 @@ begin
 
     Label12.Show;
     Label13.Show;
-    Label3.Show;
+    btn1.Show;
     Exit;
   end;
 
@@ -227,8 +223,8 @@ var i,j:Integer;
 res:Boolean;
 begin
   res := true;
-  for i := 1 to 8 do
-   for j := 1 to 8 do
+  for i := 1 to TasksCount do
+   for j := 1 to TasksCount do
     if (AvailSignalLetters[i] = AvailSignalLetters[j]) and (i<>j) and (AvailSignalLetters[i] <> '') then
     begin
       res :=false;
@@ -240,22 +236,54 @@ end;
 
 
 
+procedure TForm2.s(Sender: TObject);
+begin
+  NextStep();
+end;
+
 procedure TForm2.FormCreate(Sender: TObject);
   var i:integer;
+      test1fnd, test2fnd : byte;
 begin
-  Form2.Caption := Title + ' v.' + Version;
-//  CurrStep := 'next_test_info';
-  CurrStep := 'welcome';
 
-  for i := 1 to 4 do
+  Form2.Caption := Title + ' v.' + Version;
+
+
+
+  if TasksCount mod 2 > 0 then
+  begin
+    showmessage('TasksCount не может быть нечетным!');
+    Application.Terminate;
+  end;
+
+  // Заполним массив потенциальных сигнальных букв (не повторяющихся!) по числу заданий
+  // Гласных и согласных поровну
+  for i := 1 to round(TasksCount/2) do
     repeat
       AvailSignalLetters[i] := RandomLetterG('');
     until NoDoublucatesInAvailArr();
 
-  for i := 5 to 8 do
+  for i := Round(TasksCount/2)+1 to TasksCount do
     repeat
       AvailSignalLetters[i] := RandomLetterS('');
     until NoDoublucatesInAvailArr();
+
+  test1fnd := 0;
+  test2fnd := 0;
+  for i := 1 to TasksCount do
+  begin
+
+    if (test1fnd >= round(TasksCount/2)) then TestTypes[i] := 2;
+    if (test2fnd >= round(TasksCount/2)) then TestTypes[i] := 1;
+    if ((test1fnd < round(TasksCount/2)) and (test2fnd < round(TasksCount/2))) then TestTypes[i] := 1+Random(2);
+
+    if (TestTypes[i] = 1) then inc(test1fnd);
+    if (TestTypes[i] = 2) then inc(test2fnd);
+
+  end;
+
+
+
 
 end;
 
@@ -268,9 +296,9 @@ end;
 
 procedure TForm2.HideAll;
 begin
-  Label1.Visible := false;
-  Label2.Visible := false;
-  Label3.Visible := false;
+//  Label1.Visible := false;
+//  Label2.Visible := false;
+  btn1.Visible := false;
   Label4.Visible := false;
   Label5.Visible := false;
   Label6.Visible := false;

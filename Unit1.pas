@@ -6,9 +6,13 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Buttons, ExtCtrls, StdCtrls;
 
+const
+ TasksCount = 6; // сколько всего заданий (в сумме, обоих типов)
+ Intervals  = 4; // Сколько всего временных отрезков для аналитики (раньше было 5, в последнем ТЗ стало 4, т.к. длительность 4 минуты)
+
 type
- TMatrix =  array [1..8] of array [1..5] of Double;
- TMatrixI = array [1..8] of array [1..5] of Integer;
+ TMatrix =  array [1..TasksCount] of array [1..Intervals] of Double;
+ TMatrixI = array [1..TasksCount] of array [1..Intervals] of Integer;
 
 type
   TForm1 = class(TForm)
@@ -65,6 +69,90 @@ type
     Label7: TLabel;
     Label8: TLabel;
     btn1: TButton;
+    Label9: TLabel;
+    Label10: TLabel;
+    Cursor1: TShape;
+    l1_: TLabel;
+    l2_: TLabel;
+    l3_: TLabel;
+    l4_: TLabel;
+    l5_: TLabel;
+    l6_: TLabel;
+    l7_: TLabel;
+    l8_: TLabel;
+    l9_: TLabel;
+    l10_: TLabel;
+    l11_: TLabel;
+    l12_: TLabel;
+    l13_: TLabel;
+    l14_: TLabel;
+    l15_: TLabel;
+    l16_: TLabel;
+    l17_: TLabel;
+    l18_: TLabel;
+    l19_: TLabel;
+    l20_: TLabel;
+    l21_: TLabel;
+    l22_: TLabel;
+    l23_: TLabel;
+    l24_: TLabel;
+    l25_: TLabel;
+    l26_: TLabel;
+    l27_: TLabel;
+    l28_: TLabel;
+    l29_: TLabel;
+    l30_: TLabel;
+    l31_: TLabel;
+    l32_: TLabel;
+    l33_: TLabel;
+    l34_: TLabel;
+    l35_: TLabel;
+    l36_: TLabel;
+    l37_: TLabel;
+    l38_: TLabel;
+    l39_: TLabel;
+    l40_: TLabel;
+    l1__: TLabel;
+    l2__: TLabel;
+    l3__: TLabel;
+    l4__: TLabel;
+    l5__: TLabel;
+    l6__: TLabel;
+    l7__: TLabel;
+    l8__: TLabel;
+    l9__: TLabel;
+    l10__: TLabel;
+    l11__: TLabel;
+    l12__: TLabel;
+    l13__: TLabel;
+    l14__: TLabel;
+    l15__: TLabel;
+    l16__: TLabel;
+    l17__: TLabel;
+    l18__: TLabel;
+    l19__: TLabel;
+    l20__: TLabel;
+    l21__: TLabel;
+    l22__: TLabel;
+    l23__: TLabel;
+    l24__: TLabel;
+    l25__: TLabel;
+    l26__: TLabel;
+    l27__: TLabel;
+    l28__: TLabel;
+    l29__: TLabel;
+    l30__: TLabel;
+    l31__: TLabel;
+    l32__: TLabel;
+    l33__: TLabel;
+    l34__: TLabel;
+    l35__: TLabel;
+    l36__: TLabel;
+    l37__: TLabel;
+    l38__: TLabel;
+    l39__: TLabel;
+    l40__: TLabel;
+    Button2: TButton;
     procedure PrepareToStartTask();
     procedure StartTask();
     procedure StartTestTask();
@@ -73,6 +161,7 @@ type
     procedure RenderNextRow();
     function GetLetterIndexByCoords(x:integer):integer;
     procedure RowGenerator(signalLetter, prefix:string; sgnCnt:integer);
+    procedure ShiftRows(signalLetter, prefix:string; sgnCnt:integer);
 
     procedure FormCreate(Sender: TObject);
 
@@ -87,6 +176,8 @@ type
     procedure Timer1Timer(Sender: TObject);
     procedure l1Click(Sender: TObject);
     procedure btn1Click(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure Button2Click(Sender: TObject);
 
 
 
@@ -96,19 +187,20 @@ type
     { Public declarations }
   end;
 
-  const Version = '1.0';
+  const Version = '1.01';
   const Title = 'КОМПЬЮТЕРНАЯ ПРОГРАММА «ВНИМАНИЕ» (КПВ)';
 
 var
   Form1: TForm1;
   MyMouse: TMouse;
   oldX, oldY, minY, maxY, maxX : Integer;
-  AllowMoveHandle:boolean;
-  TestInProgress:boolean;
-  IsTestTask : Boolean; // Идет ли тестовое задание?
+  AllowMoveHandle: boolean;
+  TestInProgress: boolean;
+  IsTestTask: Boolean; // Идет ли тестовое задание?
 
   // в разрезе строк (первый индекс - строка)
-  aTime : Array of Array of Int64; // метки времени
+  aTime : Array of Array [1..40] of Int64; // метки времени
+
   aX : Array of array of Integer; // координата x курсора
   aY : Array of array of Integer; // координата y курсора
   aClicks : Array of array [1..40] of int64; // клики юзера (0 или метка времени)
@@ -116,6 +208,8 @@ var
   aSignal : Array of array [1..40] of boolean; // карта сигнальных букв (True/False)
 
   currLetters : array [1..40] of String; // текущие буквы
+  nextLetters : array [1..40] of String; // строка-превью (3-я)
+  tmpLetters : array [1..40] of String; // временная строка для обмена строк
   CurrSignalLetter : string; // Текущая сигнальная буква
   CurrPrefix : string; // Текущий префикс
 
@@ -130,7 +224,7 @@ var
   user_age: string;
 
   // Аналитика (первый индекс - номер задания, второй - минута)
-  T : array [1..8] of Double; // пункт 1
+  T : array [1..TasksCount] of Double; // пункт 1
   KB : TMatrixI; // пункт 2
   PZ : TMatrixI; // пункт 3
   OZ : TMatrixI; // пункт 4
@@ -148,9 +242,9 @@ var
   SDK2  : TMatrix; // пункт 16
   SDK3P : TMatrix; // пункт 17
   SDK3O : TMatrix; // пункт 18
-  const aGl : array[1..8] of String = ('а', 'е', 'и', 'о', 'у', 'э', 'ю', 'я');
-  const aSo : array[1..19] of String = ('б', 'в', 'г', 'д', 'ж', 'з', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш');
-  const aAll : array[1..27] of String = ('а', 'е', 'и', 'о', 'у', 'э', 'ю', 'я', 'б', 'в', 'г', 'д', 'ж', 'з', 'к', 'л', 'м', 'н', 'п', 'р', 'с', 'т', 'ф', 'х', 'ц', 'ч', 'ш');
+  const aGl : array[1..8] of String = ('А', 'Е', 'И', 'О', 'У', 'Э', 'Ю', 'Я');
+  const aSo : array[1..19] of String = ('Б', 'В', 'Г', 'Д', 'Ж', 'З', 'К', 'Л', 'М', 'Н', 'П', 'Р', 'С', 'Т', 'Ф', 'Х', 'Ц', 'Ч', 'Ш');
+  const aAll : array[1..27] of String = ('А', 'Е', 'И', 'О', 'У', 'Э', 'Ю', 'Я', 'Б', 'В', 'Г', 'Д', 'Ж', 'З', 'К', 'Л', 'М', 'Н', 'П', 'Р', 'С', 'Т', 'Ф', 'Х', 'Ц', 'Ч', 'Ш');
 
 
 implementation
@@ -219,6 +313,18 @@ end;
 procedure TForm1.btn1Click(Sender: TObject);
 begin
   btn1.Hide;
+  Label9.Hide;
+  Label10.Hide;
+
+  CurrStep := 'personal';
+
+
+  // DEBUG!!! DEL
+  CurrStep := 'next_test_info'; // !!!
+  Form2.NextStep;// !!!
+
+
+
   Form2.ShowModal;
 end;
 
@@ -227,8 +333,30 @@ begin
 //  StartTask();
 end;
 
+procedure TForm1.Button2Click(Sender: TObject);
+var i,j,k : integer;
+begin
+  // Test 1
+  for I := 1 to 1000000 do
+  begin
+      k:= Random(6);
+      ToolUnit.GenerateStringForTest2('А', k, 'ЮЮЮ');
+       for j := 1 to 40 do
+        if currLetters[j]='' then begin
+        showmessage('gotcha!');
+        end;
+
+      ToolUnit.GenerateStringForTest1('А', k);
+      for j := 1 to 40 do
+        if currLetters[j]='' then begin
+        showmessage('gotcha!');
+        end;
+  end;
+
+end;
+
 procedure TForm1.RenderNextRow();
-  var point: Tpoint;
+//  var point: Tpoint;
 begin
 
   if (  IsTestTask ) then
@@ -238,11 +366,18 @@ begin
      FinishTask();
      Exit;
    end
-   else Form1.RowGenerator(CurrSignalLetter, CurrPrefix, CurrRowNumber+2);
+   else Form1.ShiftRows(CurrSignalLetter, CurrPrefix, CurrRowNumber+2);
 
   end
-  else Form1.RowGenerator(CurrSignalLetter, CurrPrefix, -1);
+  else Form1.ShiftRows(CurrSignalLetter, CurrPrefix, -1);
 
+  // Устанавливаем курсов в начало строки
+  Cursor1.Left := 56;
+
+  // Запишем метку времени установки курсора на первый символ
+  aTime[High(aTime)][1] := GetTickCount;
+
+{
   point.X := 0;
   point.y := 0;
   point:= l1.ClientToScreen(point);
@@ -251,34 +386,90 @@ begin
   point:= Form1.ScreenToClient(point);
   oldX := point.x; // относительно формы
   oldY := point.y;
-//  label4.caption := 'oldX: ' + inttostr(oldX);
- // label5.caption := 'oldY: ' + inttostr(oldY);
 
   minY := point.y;
   maxY := point.y + l1.Height -1;
   maxX := point.x + 24*40; // Эта координата нужна для контроля ситуации, когда зажали кнопку мыши и ломимся вправо
-//  label2.caption := 'minY: ' + inttostr(minY) + ', maxY: ' + inttostr(maxY);
 
+}
 
 end;
 
 
-
-
-procedure TForm1.RowGenerator(signalLetter, prefix:string; sgnCnt:integer);
-var i : integer;
-    c : TComponent;
+// Сдвигает строки
+procedure TForm1.ShiftRows(signalLetter, prefix:string; sgnCnt:integer);
+var
+  i:integer;
 begin
-
   // Увеличиваем на 1 размерность служебных массивов
   SetLength(aLetters, Length(aLetters)+1);
   SetLength(aSignal, Length(aSignal)+1);
   SetLength(aClicks, Length(aClicks)+1);
   SetLength(aTime, Length(aTime)+1);
-  SetLength(aX, Length(aX)+1);
-  SetLength(aY, Length(aY)+1);
+//  SetLength(aX, Length(aX)+1);
+//  SetLength(aY, Length(aY)+1);
 
   inc(CurrRowNumber); // порядковый номер текущей строки в задании
+
+
+
+  // Случай генерации самой первой строки задания
+  if ((nextLetters[1]='') and (nextLetters[32]='') and (nextLetters[40]='')) then
+  begin
+    Form1.RowGenerator(signalLetter, prefix, sgnCnt);
+    for i := 1 to 40 do nextLetters[i] := currLetters[i];
+  end
+  else
+  begin
+    for i:=1 to 40 do (FindComponent('l'+inttostr(i)+'_') as TLabel).Caption := currLetters[i];
+  end;
+
+  Form1.RowGenerator(signalLetter, prefix, sgnCnt); // следующая через одну
+  for i := 1 to 40 do tmpLetters[i] := currLetters[i];
+  for i := 1 to 40 do currLetters[i] := nextLetters[i];
+  for i := 1 to 40 do nextLetters[i] := tmpLetters[i];
+
+  for i:=1 to 40 do
+  begin
+    (FindComponent('l'+inttostr(i)+'__') as TLabel).Caption := nextLetters[i];
+    (FindComponent('l'+inttostr(i)) as TLabel).Caption := currLetters[i];
+       //  if aSignal[High(aSignal)][i] then (c as TLabel).Color := clGreen
+       //                             else (c as TLabel).Color := clWhite;
+  end;
+
+
+  // заполняем служебные массивы
+  for i:=1 to 40 do begin
+      aLetters[High(aLetters)][i] := currLetters[i];
+
+      if TestType=1 then
+      begin
+        if (currLetters[i]=signalLetter) then aSignal[High(aSignal)][i] := true
+                                         else aSignal[High(aSignal)][i] := false;
+      end
+      else
+      begin
+        aSignal[High(aSignal)][i] := false;
+        if (i>=4) then
+         begin
+           if (currLetters[i]=signalLetter)
+              and (currLetters[i-1]=prefix[3])
+              and (currLetters[i-2]=prefix[2])
+              and (currLetters[i-3]=prefix[1])
+           then aSignal[High(aSignal)][i] := true
+          end;
+      end;
+  end;
+
+
+
+
+end;
+
+
+// Заполняет строку currLetters
+procedure TForm1.RowGenerator(signalLetter, prefix:string; sgnCnt:integer);
+begin
 
   // Не более 2-х строк без сигнальной буквы подряд,
   // в 1-й строке должна быть хотя бы одна сигнальная буква
@@ -305,51 +496,22 @@ begin
   until ((EmptyStringsInARow <= 2) and (CurrRowNumber<>1)) or ((CurrRowNumber=1) and (ToolUnit.isWithoutSignal(signalLetter, prefix) = False));
 
 
-  // Переносим сгенерированные буквы на VCL-компоненты
-  // заполняем служебные массивы
 
-  for i:=1 to 40 do begin
-      aLetters[High(aLetters)][i] := currLetters[i];
-
-      if TestType=1 then
-      begin
-        if (currLetters[i]=signalLetter) then aSignal[High(aSignal)][i] := true
-                                         else aSignal[High(aSignal)][i] := false;
-      end
-      else
-      begin
-        aSignal[High(aSignal)][i] := false;
-        if (i>=4) then
-         begin
-           if (currLetters[i]=signalLetter)
-              and (currLetters[i-1]=prefix[3])
-              and (currLetters[i-2]=prefix[2])
-              and (currLetters[i-3]=prefix[1])
-           then aSignal[High(aSignal)][i] := true
-          end;
-      end;
-
-      c:= FindComponent('l'+inttostr(i));
-      if c <> nil then
-        begin
-          (c as TLabel).Caption := currLetters[i];
-        //  if aSignal[High(aSignal)][i] then (c as TLabel).Color := clGreen
-          //                             else (c as TLabel).Color := clWhite;
-        end;
-  end;
 
 end;
 
+// показывает и скрывает буквы с курсором
 procedure TForm1.LettersVisibility(flag:boolean);
   var i: integer;
-      c: TComponent;
+
 begin
   for i:=1 to 40 do
   begin
-    c:= FindComponent('l'+inttostr(i));
-    if c <> nil then
-        (c as TLabel).Visible := flag;
+   (FindComponent('l'+inttostr(i)) as TLabel).Visible := flag;
+   (FindComponent('l'+inttostr(i)+'_') as TLabel).Visible := flag;
+   (FindComponent('l'+inttostr(i)+'__') as TLabel).Visible := flag;
   end;
+  Cursor1.Visible := flag;
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
@@ -387,19 +549,56 @@ begin
   LettersVisibility (false);
   TestInProgress := false;
   CurrTaskNumber := 0;
-  TestType := 1;
-  multiplier := Round(Form1.Timer1.Interval/5); // отрезок времени в миллисекундах, которых 5, в сумме равны длине одного задания (по ТЗ 60000)
+//   TestType := 1; определяется рандомно от задания к заданию
+  multiplier := Round(Form1.Timer1.Interval/Intervals); // отрезок времени в миллисекундах, которых Intervals, в сумме равны длине одного задания (по ТЗ 60000)
 
   Form1.Caption := Title + ' v.' + Version;
 
 
 end;
 
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+
+ if Key = VK_RIGHT then
+   if TestInProgress then
+   begin
+//     SetLength(aTime[High(aTime)], Length(aTime[High(aTime)])+1);
+
+     // SetLength(aX[High(aX)], Length(aX[High(aX)])+1);
+
+     // Если дошли до конца строки
+     if ((Cursor1.Left-56) div 24)+1 = 40 then
+     begin
+       TestInProgress := false;
+       RenderNextRow();
+       TestInProgress := true;
+     end
+     else
+     begin
+       // переместим курсор
+       Cursor1.Left := Cursor1.Left + 24;
+
+       // Запишем метку времени этого перемещения
+       // Метка для первого символа записывается при рендере новой строки
+       aTime[High(aTime)][((Cursor1.Left-56) div 24)+1] := GetTickCount;
+     end;
+
+
+     //aX[High(aX)][High(aX[High(aX)])] := point.x;
+     //aY[High(aY)][High(aY[High(aY)])] := point.y;
+   end;
+
+
+
+end;
+
 procedure TForm1.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
-  var point, pointSet: TPoint;
+//  var point, pointSet: TPoint;
 begin
- if TestInProgress then
+ {
  begin
    point := Form1.ScreenToClient(MyMouse.CursorPos);
 
@@ -432,9 +631,9 @@ begin
 
      SetCursorPos (pointSet.x, pointSet.y);
    end;
+}
 
 
- end;
 
 end;
 
@@ -442,7 +641,7 @@ procedure TForm1.Label1MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 begin
  // финиш прохода по строке
- if (TestInProgress) then
+{ if (TestInProgress) then
  begin
  if Length(aX[High(aX)]) = 0 then
    ShowMessage('haha! 0!');
@@ -450,6 +649,7 @@ begin
    RenderNextRow();
    TestInProgress := true;
  end;
+ }
 end;
 
 // Определяет по координатам указателя индекс буквы
@@ -478,10 +678,9 @@ end;
 
 procedure TForm1.Label6MouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
-  var point: Tpoint;
-      pointSet: Tpoint;
+//  var point: Tpoint;      pointSet: Tpoint;
 begin
-
+{
   if AllowMoveHandle and TestInProgress then
   begin
 
@@ -498,10 +697,6 @@ begin
       aTime[High(aTime)][High(aTime[High(aTime)])] := GetTickCount;
       aX[High(aX)][High(aX[High(aX)])] := point.x;
       aY[High(aY)][High(aY[High(aY)])] := point.y;
-
- //     Label4.Caption:='oldX: '+inttostr(oldX);
-//      label5.caption := 'oldY: ' + inttostr(oldY);
-  //    Label3.Caption := 'form_Х: ' + inttostr(point.x) + ' form_Y: ' +  inttostr(point.y);
 
     end
     else
@@ -535,7 +730,7 @@ begin
 
   end
   else AllowMoveHandle := true;
-
+         }
 
 end;
 

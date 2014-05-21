@@ -88,7 +88,7 @@ begin
 end;
 
 function GenerateStringForTest1(signalLetter: String; cnt: integer) :String;
-  var i, idx: integer;
+  var i, idx, j: integer;
 begin
 
   for i := 1 to 40 do
@@ -100,7 +100,12 @@ begin
        idx := InsertLetter(signalLetter,1,40);
 
        // ≈сли уже некуда вставл€ть
-       if idx=0 then Exit;
+       if idx=0 then
+       begin
+         // ƒополним строку случайными буквами, если остались свободные места
+         for j := 1 to 40 do if currLetters[j] = '' then currLetters[j] := RandomLetter(signalLetter);
+         Exit;
+       end;
 
        // ќкружим сигнальную букву другими буквами
        SurroundByLetters1(signalLetter, idx);
@@ -114,7 +119,7 @@ begin
 end;
 
 function GenerateStringForTest2(signalLetter: String; cnt: integer; prefix:string) :String;
-  var i, idx: integer;
+  var i, idx, j: integer;
 begin
 
   for i := 1 to 40 do
@@ -126,7 +131,12 @@ begin
        idx := InsertLetter(signalLetter, 4, 37); // с 4-й по 40-ю позицию это 4, 37
 
        // ≈сли уже некуда вставл€ть
-       if idx=0 then Exit;
+       if idx=0 then
+       begin
+         // ƒополним строку случайными буквами, если остались свободные места
+         for j := 1 to 40 do if currLetters[j] = '' then currLetters[j] := RandomLetter(''); // ћожно сигнальную! “.к. она сигнальна€ только если с префиксом!
+         Exit;
+       end;
 
        // ќкружим сигнальную букву другими буквами
        SurroundByLetters2(signalLetter, idx, prefix);

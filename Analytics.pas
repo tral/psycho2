@@ -40,9 +40,8 @@ procedure indSDK3P();
 
 var
   targetLetters: array of Integer;
-  avgSpeeds: array [1 .. 5] of array of Double;
   multiplier : Integer;
-  // средние скорости по минутам
+
   // var tmpTime: array of int64;
   // tmpX, tmpY : array of integer;
 
@@ -52,16 +51,22 @@ implementation
 
 uses Unit1, SysUtils, Windows, Dialogs, Forms;
 
+var
+  // средние скорости по минутам
+  avgSpeeds: array [1 .. Intervals] of array of Double;
+
+
 // indicator T
 procedure indT();
 begin
-  Try
+{  Try
     T[CurrTaskNumber] := aTime[0][0] / 1000; // т.к. метки времени уже сдинуты. В секундах
   except
     on E: Exception do
       ShowMessage(E.ClassName + ' непредвиденная ошибка, с сообщением : ' +
           E.Message + '. Сделайте снимок экрана и передайте его разработчику');
   end;
+  }
 end;
 
 function getFirstSignalIndex(row: Integer): Integer;
@@ -126,7 +131,7 @@ begin
 
   Try
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
     begin
 
       if T = 1 then
@@ -218,7 +223,7 @@ begin
     tmpLRow := -1;
     tmpLIndex := -1;
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
     begin
 
       firstX := -1;
@@ -297,7 +302,7 @@ begin
 
   Try
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
     begin
 
       cnt := 0;
@@ -336,7 +341,7 @@ var
   T: byte;
 begin
   Try
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       if (KB[CurrTaskNumber][T] = 0) then
       begin
         ShowMessage('Показатель KB (для t = ' + inttostr(T) +
@@ -360,7 +365,7 @@ var
   T: byte;
 begin
   Try
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       if (KB[CurrTaskNumber][T] = 0) then
       begin
         ShowMessage('Показатель KB (для t = ' + inttostr(T) +
@@ -384,7 +389,7 @@ var
   T: byte;
 begin
   Try
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       if (KB[CurrTaskNumber][T] = 0) then
       begin
         ShowMessage('Показатель KB (для t = ' + inttostr(T) +
@@ -410,7 +415,7 @@ var
 begin
   try
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       if (PZ[CurrTaskNumber][T] = 0) then
         OZPZ[CurrTaskNumber][T] := -1
       else
@@ -431,7 +436,7 @@ var
 begin
   try
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       if (PZ[CurrTaskNumber][T] = 0) then
         ONZPZ[CurrTaskNumber][T] := -1
       else
@@ -452,7 +457,7 @@ var
 begin
   try
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       KO[CurrTaskNumber][T] := OZ[CurrTaskNumber][T] + ONZ[CurrTaskNumber][T];
 
   except
@@ -469,7 +474,7 @@ var
 begin
   try
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       if (PZ[CurrTaskNumber][T] + ONZ[CurrTaskNumber][T] = 0) then
       begin
         ShowMessage('Сумма PZ+ONZ (для t = ' + inttostr(T) +
@@ -498,7 +503,7 @@ begin
 
   Try
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
     begin
 
       cnt := 0;
@@ -714,7 +719,7 @@ begin
         begin
           tmpTime := findRowCoordinatTime(i, findAfterNearestCoordinat(i, j));
 
-          for T := 1 to 5 do
+          for T := 1 to Intervals do
             if (tmpTime >= (T - 1) * multiplier + 1) and
               (tmpTime <= T * multiplier) then
               ONZ[CurrTaskNumber][T] := ONZ[CurrTaskNumber][T] + 1;
@@ -762,10 +767,10 @@ begin
 
     SetLength(targetLetters, 0);
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       SetLength(avgSpeeds[T], 0);
 
-    for T := 1 to 5 do // по временным промежуткам
+    for T := 1 to Intervals do // по временным промежуткам
     begin
 
       SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
@@ -881,10 +886,10 @@ begin
 
     SetLength(targetLetters, 0);
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       SetLength(avgSpeeds[T], 0);
 
-    for T := 1 to 5 do // по временным промежуткам
+    for T := 1 to Intervals do // по временным промежуткам
     begin
 
       SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
@@ -1001,10 +1006,10 @@ begin
 
     SetLength(targetLetters, 0);
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       SetLength(avgSpeeds[T], 0);
 
-    for T := 1 to 5 do // по временным промежуткам
+    for T := 1 to Intervals do // по временным промежуткам
     begin
 
       SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
@@ -1124,10 +1129,10 @@ begin
 
     SetLength(targetLetters, 0);
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       SetLength(avgSpeeds[T], 0);
 
-    for T := 1 to 5 do // по временным промежуткам
+    for T := 1 to Intervals do // по временным промежуткам
     begin
 
       SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
@@ -1242,10 +1247,10 @@ begin
 
     SetLength(targetLetters, 0);
 
-    for T := 1 to 5 do
+    for T := 1 to Intervals do
       SetLength(avgSpeeds[T], 0);
 
-    for T := 1 to 5 do // по временным промежуткам
+    for T := 1 to Intervals do // по временным промежуткам
     begin
 
       SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
@@ -1513,11 +1518,12 @@ end;
 
 function ArrayProccessingInteger(arr: TMatrixI; var fl: textfile;
   indName: string): TVector;
-var
+{var
   m, ta: Integer;
   res: TVector;
+  }
 begin
-
+                {
   for m := 1 to 6 do
     res[m] := 0;
   writeln(fl, '');
@@ -1555,17 +1561,17 @@ begin
   end;
 
   Result := res;
-
+             }
 end;
 
 function ArrayProccessingFloat(arr: TMatrix; var fl: textfile;
   indName: string): TVector;
-var
+{var
   m, ta, dtmp: Integer;
   deli: array [1 .. 5] of byte;
-  res: TVector;
+  res: TVector;}
 begin
-
+{
   for m := 1 to 6 do
     res[m] := 0;
   for m := 1 to 5 do
@@ -1625,7 +1631,7 @@ begin
   end;
 
   Result := res;
-
+                }
 end;
 
 function LinesCount(const Filename: string): Integer;
@@ -1729,11 +1735,11 @@ begin
 
     // T
     sumd := 0;
-    for ta := 1 to 8 do
+    for ta := 1 to TasksCount do
       sumd := sumd + T[ta];
-    _T := sumd / 8;
+    _T := sumd / TasksCount;
     write(fl, 'T по заданиям: ');
-    for ta := 1 to 8 do
+    for ta := 1 to TasksCount do
     begin
       writeln(fl, '');
       write(fl, 'Задание ' + inttostr(ta) + ': ' + FormatFloat('######0.###',
