@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ExtCtrls, Buttons;
 
 type
   TForm2 = class(TForm)
@@ -22,13 +22,13 @@ type
     Label11: TLabel;
     Label12: TLabel;
     Label13: TLabel;
-    btn1: TButton;
+    btn1: TSpeedButton;
     procedure NextStep();
     procedure HideAll();
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure timer5secTimer(Sender: TObject);
-    procedure s(Sender: TObject);
+    procedure btn1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -40,6 +40,8 @@ var
   Form2: TForm2;
   CurrStep: string;
 
+
+
 implementation
 
 uses Unit1, ToolUnit;
@@ -48,8 +50,7 @@ uses Unit1, ToolUnit;
 var
   // ƒоступные сигнальные буквы - по числу заданий всего
   AvailSignalLetters : array [1..TasksCount] of string;
-  // –аспределение (случайное) типов заданий
-  TestTypes : array [1..TasksCount] of integer;
+
 
 procedure TForm2.NextStep();
   var i: integer;
@@ -235,20 +236,18 @@ begin
 end;
 
 
-
-procedure TForm2.s(Sender: TObject);
+procedure TForm2.btn1Click(Sender: TObject);
 begin
   NextStep();
 end;
+
 
 procedure TForm2.FormCreate(Sender: TObject);
   var i:integer;
       test1fnd, test2fnd : byte;
 begin
 
-  Form2.Caption := Title + ' v.' + Version;
-
-
+  Form2.Caption := Title + ' v' + Version;
 
   if TasksCount mod 2 > 0 then
   begin

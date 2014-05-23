@@ -4,15 +4,20 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Buttons, ExtCtrls, StdCtrls;
+  Dialogs, Buttons, ExtCtrls, StdCtrls, Registry;
 
 const
- TasksCount = 6; // сколько всего заданий (в сумме, обоих типов)
+ TasksCount = 12; // сколько всего заданий (в сумме, обоих типов)
  Intervals  = 4; // Сколько всего временных отрезков для аналитики (раньше было 5, в последнем ТЗ стало 4, т.к. длительность 4 минуты)
+
+ Version = '1.04';
+ Title = 'Компьютерная программа «Внимание» (КПВ)';
+ IsDemoVersion = TRUE; // Чтобы сбросить счетчик демо-запусков, нужно поменять версию (Version)
 
 type
  TMatrix =  array [1..TasksCount] of array [1..Intervals] of Double;
  TMatrixI = array [1..TasksCount] of array [1..Intervals] of Integer;
+ TVectorForIndT = array [1 .. TasksCount] of Double;
 
 type
   TForm1 = class(TForm)
@@ -68,7 +73,6 @@ type
     Timer1: TTimer;
     Label7: TLabel;
     Label8: TLabel;
-    btn1: TButton;
     Label9: TLabel;
     Label10: TLabel;
     Cursor1: TShape;
@@ -153,6 +157,7 @@ type
     l39__: TLabel;
     l40__: TLabel;
     Button2: TButton;
+    btn1: TSpeedButton;
     procedure PrepareToStartTask();
     procedure StartTask();
     procedure StartTestTask();
@@ -178,17 +183,17 @@ type
     procedure btn1Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Button2Click(Sender: TObject);
+    procedure ShowStartScreen;
 
-
+    function MyRegReadInteger(dwRootKey: DWord;  const Key, Param: String): Integer;
+    procedure MyRegWriteInteger(dwRootKey: DWord; const Key, Param: String; Val:Integer);
 
   private
-    { Private declarations }
+      procedure WMNCLBUTTONDOWN(var Msg: TWMNCLButtonDown) ; message WM_NCLBUTTONDOWN;
+      procedure WMNCLBUTTONUP(var Msg: TWMNCLButtonUp) ; message WM_NCLBUTTONUP;
   public
     { Public declarations }
   end;
-
-  const Version = '1.01';
-  const Title = 'КОМПЬЮТЕРНАЯ ПРОГРАММА «ВНИМАНИЕ» (КПВ)';
 
 var
   Form1: TForm1;
@@ -198,14 +203,17 @@ var
   TestInProgress: boolean;
   IsTestTask: Boolean; // Идет ли тестовое задание?
 
+  // Распределение (случайное) типов заданий
+  TestTypes : array [1..TasksCount] of integer;
+
   // в разрезе строк (первый индекс - строка)
   aTime : Array of Array [1..40] of Int64; // метки времени
-
-  aX : Array of array of Integer; // координата x курсора
-  aY : Array of array of Integer; // координата y курсора
   aClicks : Array of array [1..40] of int64; // клики юзера (0 или метка времени)
   aLetters : Array of Array [1..40] of string; // лог букв (там сами буквы)
   aSignal : Array of array [1..40] of boolean; // карта сигнальных букв (True/False)
+
+  aX : Array of array of Integer; // координата x курсора
+  aY : Array of array of Integer; // координата y курсора
 
   currLetters : array [1..40] of String; // текущие буквы
   nextLetters : array [1..40] of String; // строка-превью (3-я)
@@ -215,7 +223,7 @@ var
 
   EmptyStringsInARow : byte; // число сгенерированных строк без сигнальной буквы подряд
   CurrRowNumber : Integer; // текущая строка задания (порядковый номер)
-  CurrTaskNumber : integer; // номер текущего задания от 1 до 8
+  CurrTaskNumber : integer; // номер текущего задания от 1 до TasksCount
   TestType : byte; // тип теста 1 или 2
   TaskStartTime, TaskFinishTime : int64; // время старта и окончания задания
 
@@ -224,20 +232,24 @@ var
   user_age: string;
 
   // Аналитика (первый индекс - номер задания, второй - минута)
-  T : array [1..TasksCount] of Double; // пункт 1
-  KB : TMatrixI; // пункт 2
-  PZ : TMatrixI; // пункт 3
-  OZ : TMatrixI; // пункт 4
-  ONZ : TMatrixI; // пункт 5
+  T : TVectorForIndT; // пункт 6.2.1
+  KB : TMatrixI; // пункт 6.2.2
+  PZ : TMatrixI; // пункт 6.2.3
+  OZ : TMatrixI; // пункт 4 - ОТ НЕГО ЗАВИСИТ KO
+  ONZ : TMatrixI; // пункт 5 - ОТ НЕГО ЗАВИСИТ KO
   KPZ : TMatrix; // пункт 6 PZ/KB
   KOZ : TMatrix; // пункт 7 OZ/KB
   KONZ : TMatrix; // пункт 8 ONZ/KB
   OZPZ : TMatrix; // пункт 9 OZ/PZ
   ONZPZ : TMatrix; // пункт 10 ONZ/PZ
-  KO : TMatrix; // пункт 11 OZ+ONZ
+  KO : TMatrix; // пункт 6.2.4 OZ+ONZ
   KT : TMatrix; // пункт 12 (PZ-OZ)/(PZ+ONZ)
   SDK : TMatrix; // пункт 13
   SDK1P : TMatrix; // пункт 14
+  SPP : TMatrix; // пункт 6.2.5.2
+  SPO : TMatrix; // пункт 6.2.5.3
+  SOP : TMatrix; // пункт 6.2.5.4
+  SOO : TMatrix; // пункт 6.2.5.5
   SDK1O : TMatrix; // пункт 15
   SDK2  : TMatrix; // пункт 16
   SDK3P : TMatrix; // пункт 17
@@ -287,8 +299,10 @@ begin
   RenderNextRow();
 end;
 
+// Завершение задания по таймеру
 procedure TForm1.FinishTask();
 begin
+
   Timer1.Enabled := false;
   LettersVisibility (false);
   TestInProgress := false;
@@ -300,21 +314,22 @@ begin
 
     Analytics.CountTask();
 
-    if CurrTaskNumber=8 then
+    if CurrTaskNumber = TasksCount then
       Analytics.ToCSV() //!!! усреднение
 
   end;
 
-    Form2.NextStep();
-    Form2.ShowModal();
+  Form2.NextStep();
+  Form2.ShowModal();
 
 end;
 
-procedure TForm1.btn1Click(Sender: TObject);
+procedure TForm1.ShowStartScreen;
 begin
   btn1.Hide;
   Label9.Hide;
   Label10.Hide;
+  Form1.BorderIcons := [biSystemMenu];
 
   CurrStep := 'personal';
 
@@ -323,9 +338,12 @@ begin
   CurrStep := 'next_test_info'; // !!!
   Form2.NextStep;// !!!
 
-
-
   Form2.ShowModal;
+end;
+
+procedure TForm1.btn1Click(Sender: TObject);
+begin
+  ShowStartScreen;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -336,6 +354,39 @@ end;
 procedure TForm1.Button2Click(Sender: TObject);
 var i,j,k : integer;
 begin
+
+
+
+
+
+
+  TestType := 2;
+  for I := 1 to 1000 do
+  begin
+
+    SetLength(aLetters, 0);
+    SetLength(aSignal, 0);
+    SetLength(aClicks, 0);
+    SetLength(aTime, 0);
+    CurrSignalLetter := 'К';
+    CurrPrefix:='ААА';
+    CurrRowNumber := 0;
+    EmptyStringsInARow := 0;
+    RenderNextRow();
+
+
+
+//        getFirstSignalIndex();
+
+    getFirstSignalIndex(0);
+
+//    if (j = 40) and(currLetters[j]<>'К') then
+  //  begin
+  //    showmessage('gotcha!');
+  //  end;
+
+  end;
+
   // Test 1
   for I := 1 to 1000000 do
   begin
@@ -352,6 +403,7 @@ begin
         showmessage('gotcha!');
         end;
   end;
+
 
 end;
 
@@ -371,7 +423,7 @@ begin
   end
   else Form1.ShiftRows(CurrSignalLetter, CurrPrefix, -1);
 
-  // Устанавливаем курсов в начало строки
+  // Устанавливаем курсор в начало строки
   Cursor1.Left := 56;
 
   // Запишем метку времени установки курсора на первый символ
@@ -409,22 +461,22 @@ begin
 //  SetLength(aX, Length(aX)+1);
 //  SetLength(aY, Length(aY)+1);
 
-  inc(CurrRowNumber); // порядковый номер текущей строки в задании
-
-
-
   // Случай генерации самой первой строки задания
-  if ((nextLetters[1]='') and (nextLetters[32]='') and (nextLetters[40]='')) then
+  if (CurrRowNumber = 0) then
   begin
-    Form1.RowGenerator(signalLetter, prefix, sgnCnt);
+    inc(CurrRowNumber); // порядковый номер текущей строки в задании
+    Form1.RowGenerator(signalLetter, prefix, sgnCnt); //  (обновляется currLetters)
     for i := 1 to 40 do nextLetters[i] := currLetters[i];
-  end
-  else
-  begin
-    for i:=1 to 40 do (FindComponent('l'+inttostr(i)+'_') as TLabel).Caption := currLetters[i];
+    for i := 1 to 40 do currLetters[i]:='';
   end;
 
-  Form1.RowGenerator(signalLetter, prefix, sgnCnt); // следующая через одну
+  for i:=1 to 40 do begin
+    (FindComponent('l'+inttostr(i)+'_') as TLabel).Caption := currLetters[i];
+     //Application.ProcessMessages;
+  end;
+
+  inc(CurrRowNumber); // порядковый номер текущей строки в задании
+  Form1.RowGenerator(signalLetter, prefix, sgnCnt); // следующая через одну (обновляется currLetters)
   for i := 1 to 40 do tmpLetters[i] := currLetters[i];
   for i := 1 to 40 do currLetters[i] := nextLetters[i];
   for i := 1 to 40 do nextLetters[i] := tmpLetters[i];
@@ -433,8 +485,7 @@ begin
   begin
     (FindComponent('l'+inttostr(i)+'__') as TLabel).Caption := nextLetters[i];
     (FindComponent('l'+inttostr(i)) as TLabel).Caption := currLetters[i];
-       //  if aSignal[High(aSignal)][i] then (c as TLabel).Color := clGreen
-       //                             else (c as TLabel).Color := clWhite;
+    //Application.ProcessMessages;
   end;
 
 
@@ -461,6 +512,10 @@ begin
       end;
   end;
 
+// del debug
+//  for i:=1 to 40 do
+//    if aSignal[High(aSignal)][i]=true then (FindComponent('l'+inttostr(i)) as TLabel).Color := clGreen
+//                                      else (FindComponent('l'+inttostr(i)) as TLabel).Color := clWhite;
 
 
 
@@ -471,11 +526,11 @@ end;
 procedure TForm1.RowGenerator(signalLetter, prefix:string; sgnCnt:integer);
 begin
 
-  // Не более 2-х строк без сигнальной буквы подряд,
-  // в 1-й строке должна быть хотя бы одна сигнальная буква
-  repeat
+    Randomize;
 
-    if sgnCnt <= 0 then sgnCnt:= Random(6); // от 0 до 5
+    if CurrRowNumber = 1 then sgnCnt:= 1 + Random(5) // случайное число от 1 до 5 - в 1-й строке должна быть хотя бы одна сигнальная буква
+      else if EmptyStringsInARow >= 2 then sgnCnt:= 1 + Random(5) // случайное число от 1 до 5 - т.к. уже были 2 подряд строки без сигнальных букв
+        else if sgnCnt <= 0 then sgnCnt:= Random(6); // случайное число от 0 до 5 - обычное поведение
 
     if TestType = 1 then
       ToolUnit.GenerateStringForTest1(signalLetter, sgnCnt)
@@ -492,11 +547,6 @@ begin
     // Проверим есть ли хотя бы одна сигнальная буква в сгенерированной строке
     if ToolUnit.isWithoutSignal(signalLetter, prefix) then inc(EmptyStringsInARow)
                                                       else EmptyStringsInARow := 0;
-
-  until ((EmptyStringsInARow <= 2) and (CurrRowNumber<>1)) or ((CurrRowNumber=1) and (ToolUnit.isWithoutSignal(signalLetter, prefix) = False));
-
-
-
 
 end;
 
@@ -518,7 +568,6 @@ procedure TForm1.Timer1Timer(Sender: TObject);
 begin
 //showmessage ('timer!');
   FinishTask();
-
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
@@ -544,55 +593,78 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
+var lLaunches: Integer;
 begin
+
+  if IsDemoVersion then
+  begin
+    lLaunches := MyRegReadInteger(HKEY_CURRENT_USER, '\Software\Proj_PGAIK' ,  'Launches'+Version);
+
+    if (lLaunches > 10) then
+    begin
+      showmessage('Превышено допустимое число запусков демонстрационной версии!');
+      Application.Terminate;
+    end;
+
+    MyRegWriteInteger(HKEY_CURRENT_USER, '\Software\Proj_PGAIK', 'Launches'+Version, lLaunches+1);
+
+  end;
+
 
   LettersVisibility (false);
   TestInProgress := false;
   CurrTaskNumber := 0;
 //   TestType := 1; определяется рандомно от задания к заданию
-  multiplier := Round(Form1.Timer1.Interval/Intervals); // отрезок времени в миллисекундах, которых Intervals, в сумме равны длине одного задания (по ТЗ 60000)
+  multiplier := Round(Form1.Timer1.Interval/Intervals); // отрезок времени в миллисекундах, которых Intervals, в сумме равны длине одного задания (по ТЗ задание 4 минуты, интервалы по 1 минуте)
 
-  Form1.Caption := Title + ' v.' + Version;
+  Form1.Caption := Title + ' v' + Version;
 
+  if IsDemoVersion then Form1.Caption := Form1.Caption + ' ДЕМОНСТРАЦИОННАЯ ВЕРСИЯ (осталось запусков на этом компьютере: '+inttostr(10-lLaunches)+')';
+  
 
 end;
+
 
 procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 
- if Key = VK_RIGHT then
-   if TestInProgress then
-   begin
-//     SetLength(aTime[High(aTime)], Length(aTime[High(aTime)])+1);
+  if TestInProgress then
+  begin
 
-     // SetLength(aX[High(aX)], Length(aX[High(aX)])+1);
+    Case Key of
+     VK_SPACE : begin
+                  if aClicks[High(aClicks)][((Cursor1.Left-56) div 24)+1] = 0 then
+                      aClicks[High(aClicks)][((Cursor1.Left-56) div 24)+1] := GetTickCount;
+                  Exit;
+                end;
+     VK_RIGHT : begin
+                  // Если дошли до конца строки
+                  if ((Cursor1.Left-56) div 24)+1 = 40 then
+                  begin
+                    TestInProgress := false;
+                    RenderNextRow();
+                    TestInProgress := true;
+                  end
+                  else
+                  begin
+                    // переместим курсор
+                    Cursor1.Left := Cursor1.Left + 24;
 
-     // Если дошли до конца строки
-     if ((Cursor1.Left-56) div 24)+1 = 40 then
-     begin
-       TestInProgress := false;
-       RenderNextRow();
-       TestInProgress := true;
-     end
-     else
-     begin
-       // переместим курсор
-       Cursor1.Left := Cursor1.Left + 24;
+                    // Запишем метку времени этого перемещения
+                    // Метка для первого символа записывается при рендере новой строки
+                    aTime[High(aTime)][((Cursor1.Left-56) div 24)+1] := GetTickCount;
+                  end;
+                Exit;
+                end;
+    End; // case
 
-       // Запишем метку времени этого перемещения
-       // Метка для первого символа записывается при рендере новой строки
-       aTime[High(aTime)][((Cursor1.Left-56) div 24)+1] := GetTickCount;
-     end;
-
-
-     //aX[High(aX)][High(aX[High(aX)])] := point.x;
-     //aY[High(aY)][High(aY[High(aY)])] := point.y;
-   end;
-
-
-
+  end
+  else
+    if ((Key = 13) and (CurrTaskNumber=0)) then ShowStartScreen;
+    
 end;
+
 
 procedure TForm1.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
@@ -670,10 +742,9 @@ end;
 
 procedure TForm1.l1Click(Sender: TObject);
 begin
-
- if TestInProgress then
-   if aClicks[High(aClicks)][StrToInt(copy((Sender as TLabel).Name, 2, 2))] = 0 then
-     aClicks[High(aClicks)][StrToInt(copy((Sender as TLabel).Name, 2, 2))] := GetTickCount;
+// if TestInProgress then
+//   if aClicks[High(aClicks)][StrToInt(copy((Sender as TLabel).Name, 2, 2))] = 0 then
+//     aClicks[High(aClicks)][StrToInt(copy((Sender as TLabel).Name, 2, 2))] := GetTickCount;
 end;
 
 procedure TForm1.Label6MouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -734,8 +805,60 @@ begin
 
 end;
 
+function TForm1.MyRegReadInteger(dwRootKey: DWord;
+  const Key, Param: String): Integer;
+var
+  Res: Integer;
+  Reg: TRegistry;
+begin
+  Reg := TRegistry.Create;
+  Reg.RootKey := dwRootKey;
+  Reg.OpenKey(Key, True);
+  try
+    Res := Reg.ReadInteger(Param);
+  except
+    Res := 0;
+  end;
+  Reg.Free;
+  Result := Res;
+end;
+
+procedure TForm1.MyRegWriteInteger(dwRootKey: DWord;
+  const Key, Param: String; Val:Integer);
+var
+  Reg: TRegistry;
+begin
+  Reg := TRegistry.Create;
+  Reg.RootKey := dwRootKey;
+  Reg.OpenKey(Key, True);
+  Reg.WriteInteger(Param, Val);
+  Reg.Free;
+end;
 
 
+procedure TForm1.WMNCLBUTTONDOWN(var Msg: TWMNCLButtonDown) ;
+begin
+  if Msg.HitTest = HTHELP then
+    Msg.Result := 0 // "eat" the message
+  else
+    inherited;
+end;
 
+procedure TForm1.WMNCLBUTTONUP(var Msg: TWMNCLButtonUp) ;
+begin
+  if Msg.HitTest = HTHELP then
+  begin
+    Msg.Result := 0;
+    ShowMessage('КПВ v'+Version+#13#10+
+      'Всего заданий (в совокупности по обоим тестам): '+inttostr(TasksCount)+#13#10+
+      'Продолжительность одного задания: '+inttostr(Round(Timer1.Interval/1000))+' секунд'+#13#10+
+      #13#10+
+      '(C) Трубников Алексей, 2013-2014'+#13#10+
+      'e-mail: tralmail@gmail.com'
+      ) ;
+  end
+  else
+    inherited;
+end;
 
 end.

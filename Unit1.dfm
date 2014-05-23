@@ -1,12 +1,13 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu]
+  BorderIcons = [biSystemMenu, biHelp]
   BorderStyle = bsSingle
   Caption = 'Form1'
   ClientHeight = 620
   ClientWidth = 1081
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -59,7 +60,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1041
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -79,7 +80,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1042
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -99,7 +100,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1043
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -119,7 +120,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1044
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -139,7 +140,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1046
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -159,7 +160,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1047
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -179,7 +180,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1050
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -199,7 +200,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1051
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -219,7 +220,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1052
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -239,7 +240,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -259,7 +260,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1055
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -279,7 +280,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1056
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -299,7 +300,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1057
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -319,7 +320,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1058
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -339,7 +340,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1060
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -359,7 +360,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1061
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -379,7 +380,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1062
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -399,7 +400,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1063
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -419,7 +420,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1064
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -439,7 +440,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1040
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -459,7 +460,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1045
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -479,7 +480,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1048
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -499,7 +500,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1054
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -519,7 +520,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1059
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -539,7 +540,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1069
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -559,7 +560,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1070
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -579,7 +580,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1071
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -599,7 +600,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -619,7 +620,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -639,7 +640,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -659,7 +660,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -679,7 +680,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -699,7 +700,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -719,7 +720,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -739,7 +740,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -759,7 +760,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -779,7 +780,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -799,7 +800,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -819,7 +820,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -839,7 +840,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -936,7 +937,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1041
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -956,7 +957,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1042
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -976,7 +977,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1043
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -996,7 +997,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1044
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1016,7 +1017,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1046
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1036,7 +1037,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1047
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1056,7 +1057,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1050
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1076,7 +1077,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1051
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1096,7 +1097,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1052
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1116,7 +1117,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1136,7 +1137,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1055
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1156,7 +1157,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1056
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1176,7 +1177,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1057
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1196,7 +1197,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1058
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1216,7 +1217,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1060
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1236,7 +1237,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1061
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1256,7 +1257,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1062
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1276,7 +1277,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1063
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1296,7 +1297,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1064
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1316,7 +1317,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1040
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1336,7 +1337,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1045
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1356,7 +1357,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1048
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1376,7 +1377,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1054
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1396,7 +1397,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1059
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1416,7 +1417,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1069
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1436,7 +1437,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1070
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1456,7 +1457,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1071
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1476,7 +1477,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1496,7 +1497,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1516,7 +1517,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1536,7 +1537,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1556,7 +1557,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1576,7 +1577,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1596,7 +1597,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1616,7 +1617,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1636,7 +1637,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1656,7 +1657,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1676,7 +1677,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1696,7 +1697,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1716,7 +1717,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1736,7 +1737,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1041
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1756,7 +1757,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1042
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1776,7 +1777,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1043
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1796,7 +1797,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1044
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1816,7 +1817,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1046
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1836,7 +1837,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1047
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1856,7 +1857,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1050
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1876,7 +1877,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1051
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1896,7 +1897,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1052
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1916,7 +1917,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1936,7 +1937,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1055
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1956,7 +1957,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1056
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1976,7 +1977,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1057
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -1996,7 +1997,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1058
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2016,7 +2017,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1060
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2036,7 +2037,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1061
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2056,7 +2057,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1062
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2076,7 +2077,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1063
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2096,7 +2097,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1064
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2116,7 +2117,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1040
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2136,7 +2137,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1045
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2156,7 +2157,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1048
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2176,7 +2177,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1054
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2196,7 +2197,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1059
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2216,7 +2217,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1069
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2236,7 +2237,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1070
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2256,7 +2257,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1071
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2276,7 +2277,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2296,7 +2297,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2316,7 +2317,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2336,7 +2337,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2356,7 +2357,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2376,7 +2377,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2396,7 +2397,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2416,7 +2417,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2436,7 +2437,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2456,7 +2457,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2476,7 +2477,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2496,7 +2497,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2516,7 +2517,7 @@ object Form1: TForm1
     Alignment = taCenter
     AutoSize = False
     Caption = #1053
-    Color = clWhite
+    Color = clBtnFace
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -32
@@ -2528,13 +2529,12 @@ object Form1: TForm1
     OnClick = l1Click
     OnMouseMove = Label6MouseMove
   end
-  object btn1: TButton
+  object btn1: TSpeedButton
     Left = 359
     Top = 506
     Width = 369
     Height = 62
     Caption = #1044#1083#1103' '#1087#1088#1086#1076#1086#1083#1078#1077#1085#1080#1103' '#1085#1072#1078#1084#1080#1090#1077' '#1082#1083#1072#1074#1080#1096#1091' '#171'Enter'#187
-    TabOrder = 3
     OnClick = btn1Click
   end
   object Button1: TButton
@@ -2573,13 +2573,13 @@ object Form1: TForm1
     Width = 115
     Height = 66
     Caption = 'UnitTests'
-    TabOrder = 4
+    TabOrder = 3
     Visible = False
     OnClick = Button2Click
   end
   object Timer1: TTimer
     Enabled = False
-    Interval = 300000
+    Interval = 240000
     OnTimer = Timer1Timer
     Left = 113
     Top = 52

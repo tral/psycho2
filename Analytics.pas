@@ -2,9 +2,7 @@ unit Analytics;
 
 interface
 
-type
-  // TMatrix =  array [1..8] of array [1..5] of Double;
-  TVector = array [1 .. 6] of Double;
+
 
 procedure ToCSV();
 function LinesCount(const Filename: string): Integer;
@@ -34,6 +32,10 @@ procedure indKO();
 procedure indKT();
 procedure indSDK();
 procedure indSDK1P();
+procedure indSPP();
+procedure indSPO();
+procedure indSOP();
+procedure indSOO();
 procedure indSDK1O();
 procedure indSDK2();
 procedure indSDK3P();
@@ -55,18 +57,20 @@ var
   // средние скорости по минутам
   avgSpeeds: array [1 .. Intervals] of array of Double;
 
+type
+  TVector = array [1 .. Intervals+1] of Double;
 
 // indicator T
 procedure indT();
 begin
-{  Try
-    T[CurrTaskNumber] := aTime[0][0] / 1000; // т.к. метки времени уже сдинуты. В секундах
+  Try
+    T[CurrTaskNumber] := (aTime[0][2] - aTime[0][1]) / 1000; // т.к. метки времени уже сдинуты. В секундах
   except
     on E: Exception do
       ShowMessage(E.ClassName + ' непредвиденная ошибка, с сообщением : ' +
           E.Message + '. Сделайте снимок экрана и передайте его разработчику');
   end;
-  }
+
 end;
 
 function getFirstSignalIndex(row: Integer): Integer;
@@ -122,7 +126,7 @@ var
   T, i, j: Integer;
   lastX, lastRow: Integer;
   firstX, firstRow: Integer;
-  firstCoordIndex, firstSignalIndex: Integer;
+  firstSignalIndex: Integer;
   cnt: int64;
   firstTime, lastTime: int64;
   // _Z :string;
@@ -139,12 +143,12 @@ begin
         firstRow := 0;
         // Найдем индекс первой сигнальной буквы в 0-й строке (буква там должна быть по ТЗ!)
         firstSignalIndex := getFirstSignalIndex(firstRow);
-        // Индекс первой юзер-координата, ближайшая к 1-й сигнальной букве в самой ранней строке
-        firstCoordIndex := findONNearestCoordinat(firstRow, firstSignalIndex);
-        firstTime := findRowCoordinatTime(firstRow, firstCoordIndex);
-        // время, соотв-ее этой координате
-        firstX := findRowCoordinatX(firstRow, firstCoordIndex);
+        // Индекс первой юзер-координаты, ближайшая к 1-й сигнальной букве в самой ранней строке
+//        firstCoordIndex := findONNearestCoordinat(firstRow, firstSignalIndex);
+        // время, соотв-ее первой юзер-координате, ближайшей к 1-й сигнальной букве в самой ранней строке
+        firstTime := aTime[firstRow][firstSignalIndex];
         // X этой координаты
+        firstX := firstSignalIndex;
       end
       else
       begin
@@ -158,32 +162,31 @@ begin
       lastTime := -1;
 
       for i := 0 to High(aTime) do
-        for j := 0 to High(aTime[i]) do
+        for j := 1 to 40 do
           if (aTime[i][j] >= (T - 1) * multiplier + 1) and
             (aTime[i][j] <= T * multiplier) then
           begin
             if (firstX < 0) and (T > 1) then // для t=1 определили уже
             begin
-              firstX := aX[i][j];
+              firstX := j;
               firstRow := i;
               firstTime := aTime[i][j];
             end;
-            lastX := aX[i][j];
+            lastX := j;
             lastRow := i;
             lastTime := aTime[i][j];
           end;
 
-      //
+      // сколько букв
       if (firstRow = lastRow) then
         cnt := lastX - firstX + 1
       else
-        cnt := GetFormrowLastX() - firstX + lastX - GetFormrowFirstX() + 2 +
-          (lastRow - firstRow - 1) * 24 * 40;
+        cnt := 40 - firstX + 1 + lastX + (lastRow - firstRow - 1)  * 40;
 
       if ((firstRow = -1) OR (lastRow = -1)) then
       begin
         ShowMessage(
-          'При выполнении текущего задания испытуемый не двигал курсор больше минуты! Программа будет завершена, необходимо пройти тест повторно!');
+          'При выполнении текущего задания испытуемый не двигал курсор больше минуты! Невозможно рассчитать показатели! Программа будет завершена, необходимо пройти тест повторно!');
         Application.Terminate;
         Exit;
       end;
@@ -193,11 +196,11 @@ begin
       // else _Z := _Z + '(<>)';
       // _Z := _Z + ' | ';
 
-      SDK[CurrTaskNumber][T] := cnt * 1000 / (lastTime - firstTime);
-      // в пиксель/секундах
-    end;
+      if (lastTime - firstTime = 0)
+        then SDK[CurrTaskNumber][T] := 0
+        else SDK[CurrTaskNumber][T] := cnt * 60 * 1000 / (lastTime - firstTime); // скорость: букв в минуту
 
-    // showmessage( ' -> ' +  _Z);
+    end;
 
   except
     on E: Exception do
@@ -232,49 +235,38 @@ begin
       lastRow := -1;
 
       for i := 0 to High(aTime) do
-        for j := 0 to High(aTime[i]) do
-          if (aTime[i][j] >= (T - 1) * multiplier + 1) and
-            (aTime[i][j] <= T * multiplier) then
+        for j := 1 to 40 do
+          if (aTime[i][j] >= (T - 1) * multiplier + 1) and (aTime[i][j] <= T * multiplier) then
           begin
             if firstX < 0 then
             begin
-              firstX := aX[i][j];
+              firstX := j; // Первый символ в строке firstRow, который попадает во временной интервал
               firstRow := i;
             end;
-            lastX := aX[i][j];
+            lastX := j;
             lastRow := i;
           end;
 
       // включаем на этом этапе все буквы (потом удалим дважды включенные граничные)
       if (firstRow = lastRow) then
-        cnt := Form1.GetLetterIndexByCoords(lastX)
-          - Form1.GetLetterIndexByCoords(firstX) + 1
+        cnt := lastX-firstX+1
       else
-        cnt := 40 - Form1.GetLetterIndexByCoords(firstX)
-          + 1 + Form1.GetLetterIndexByCoords(lastX) + (lastRow - firstRow - 1)
-          * 40;
+        cnt := 40 - firstX + 1 + lastX + (lastRow - firstRow - 1)  * 40;
 
       // смотрим не посчитали ли граничную букву давжды
-      if ((tmpLRow = firstRow) AND (tmpLIndex = Form1.GetLetterIndexByCoords
-            (firstX))) then
-        dec(cnt);
+      if ((tmpLRow = firstRow) AND (tmpLIndex = firstX)) then dec(cnt);
 
       // обновляем координаты граничной буквы
       tmpLRow := lastRow;
-      tmpLIndex := Form1.GetLetterIndexByCoords(lastX);
+      tmpLIndex := lastX;
 
       if ((firstRow = -1) OR (lastRow = -1)) then
       begin
         ShowMessage(
-          'При выполнении текущего задания испытуемый не двигал курсор больше минуты! Программа будет завершена, необходимо пройти тест повторно!');
+          'При выполнении текущего задания испытуемый не двигал курсор больше минуты! Рассчет показателей невозможен! Программа будет завершена, необходимо пройти тест повторно!');
         Application.Terminate;
         Exit;
       end;
-
-      // _Z := _Z + inttostr(cnt);
-      // if (firstRow = lastRow) then _Z := _Z + '(=)'
-      // else _Z := _Z + '(<>)';
-      // _Z := _Z + ' | ';
 
       KB[CurrTaskNumber][T] := cnt;
     end;
@@ -282,7 +274,7 @@ begin
     // всего просмотренных букв (дебаг)
     // _p := High(aTime)*40+ Form1.GetLetterIndexByCoords(aX[High(aX)][High(aX[High(aX)])], aY[High(aY)][High(aY[High(aY)])]);
 
-    // showmessage(_Z + ' -> ' +  inttostr(_p));
+    // showmessage('!');
     // i:=000;
 
   except
@@ -311,8 +303,7 @@ begin
         for j := 1 to 40 do // !!!
           // Если время клика входит в нужную минуту
           if (aClicks[i][j] > 0) and
-            (aClicks[i][j] >= (T - 1) * multiplier + 1) and
-            (aClicks[i][j] <= T * multiplier) then
+            (aClicks[i][j] >= (T - 1) * multiplier + 1) and (aClicks[i][j] <= T * multiplier) then
           begin
             if ((aSignal[i][j]) and (aClicks[i][j] > 0)) then
               inc(cnt);
@@ -700,33 +691,49 @@ begin
 
   Try
 
-    // for t := 1 to 5 do
-    // begin
-    // высчитаем до какой буквы дошел юзер
-    rowMax := Length(aX) - 1;
-    indexMax := Form1.GetLetterIndexByCoords(aX[rowMax][ High(aX[rowMax])]);
+      // высчитаем до какой буквы дошел юзер
+      indexMax := -1;
+      rowMax := -1;
+      for i := 0 to High(aTime) do
+        for j := 1 to 40 do
+          begin
+            indexMax := j;
+            rowMax := i;
+          end;
 
-    // Идем по всем сигнальным буквам, для каждой ненажатой ищем ближайшую координату и по ней - время
-    for i := 0 to High(aSignal) do
-      for j := 1 to 40 do // !!!
-      begin
-
-        if (i >= rowMax) and (j > indexMax) then
-          break;
-
-        //
-        if (aSignal[i][j]) and (aClicks[i][j] = 0) then
+      // Идем по всем сигнальным буквам, для каждой ненажатой ищем ближайшую координату и по ней - время
+      for i := 0 to High(aSignal) do
+        for j := 1 to 40 do // !!!
         begin
-          tmpTime := findRowCoordinatTime(i, findAfterNearestCoordinat(i, j));
 
-          for T := 1 to Intervals do
-            if (tmpTime >= (T - 1) * multiplier + 1) and
-              (tmpTime <= T * multiplier) then
-              ONZ[CurrTaskNumber][T] := ONZ[CurrTaskNumber][T] + 1;
-        end;
-      end;
+          if (i >= rowMax) and (j > indexMax) then
+            break;
 
-    // end; // for t
+          //
+          if (aSignal[i][j]) and (aClicks[i][j] = 0) then
+          begin
+
+            // Если это последняя буква во всем задании
+            if (i >= rowMax) and (j = indexMax) then
+            begin
+              // то не считаем это ошибкой (просто не успел пробел нажать и время вышло)
+            end
+            else
+             begin
+                // иначе берем время установки курсора на следующую букву
+                if j<40 then tmpTime := aTime[i][j+1]
+                        else tmpTime := aTime[i+1][1];
+                // определяем в какой временной интервал попадает эта ошибка (пропуск сигнальной буквы)
+                for T := 1 to Intervals do
+                  if (tmpTime >= (T - 1) * multiplier + 1) and
+                    (tmpTime <= T * multiplier) then
+                    ONZ[CurrTaskNumber][T] := ONZ[CurrTaskNumber][T] + 1;
+             end;
+
+          end;
+
+        end; // for i j
+
 
     // showmessage(inttostr( ONZ[CurrTaskNumber][1])+'|' +inttostr( ONZ[CurrTaskNumber][2])+'|'+inttostr( ONZ[CurrTaskNumber][3])+'|'+inttostr( ONZ[CurrTaskNumber][4])+'|'+inttostr( ONZ[CurrTaskNumber][5])       );
 
@@ -765,15 +772,12 @@ begin
 
   Try
 
-    SetLength(targetLetters, 0);
-
-    for T := 1 to Intervals do
-      SetLength(avgSpeeds[T], 0);
 
     for T := 1 to Intervals do // по временным промежуткам
     begin
 
       SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
+
 
       for i := 0 to High(aTime) do // по всем строкам юзер-координат
       begin
@@ -870,6 +874,374 @@ begin
   end;
 
 end;
+
+
+// indicator SPP
+procedure indSPP();
+var
+  T, i, j, k, b, time1, time2: Integer;
+  firstX, lastX, delitel: Integer;
+  sm: Double;
+begin
+
+  Try
+
+    for T := 1 to Intervals do // по временным промежуткам
+    begin
+
+      SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
+
+      for i := 0 to High(aTime) do // по всем строкам юзер-координат
+      begin
+
+        firstX := -1;
+        lastX := -1;
+        SetLength(targetLetters, 0);
+
+        // ищем сигнальные буквы в данной строке, которые попадают во временной промежуток
+
+        for j := 1 to 40 do
+          if (aTime[i][j] >= (T - 1) * multiplier + 1) and
+            (aTime[i][j] <= T * multiplier) then
+          begin
+            if firstX < 0 then
+              firstX := j;
+            lastX := j;
+          end;
+
+        // Если нашли первую и последнюю сигнальную буквы в этой строке, попадающию в нужный временной промежуток,
+        // Заполним массив targetLetters - в нем будут индексы всех сигнальных букв этой строки между индексами
+        if (firstX > 0) and (lastX > 0) then fillTargetLetters(i, firstX, lastX);
+
+        // Если сигнальных букв не менее 2, продолжаем рассчет
+        if Length(targetLetters) > 1 then
+          for k := 0 to High(targetLetters) do
+            // по всем сигнальным буквам - кандидатам
+            // если сигнальная буква была кликнута и она не последняя
+            if (aClicks[i][targetLetters[k]] > 0) and (k <> High(targetLetters)) then
+            begin
+
+              time1 := aClicks[i][targetLetters[k]]; // время клика по сигнальной букве
+
+              // Проверим, была ли кликнута следующая сигнальная буква
+              // Можно так сделать, т.к. рассматриваемая сигнальная буква не является последней сигнальной буквой в строке
+              if (aClicks[i][targetLetters[k+1]] > 0) then
+              begin
+                time2 := aTime[i][targetLetters[k+1]]; // Время установки курсора на следующую сигнальную букву
+                // считаем скорость
+                if (time2 - time1 > 0) then
+                begin
+                  SetLength(avgSpeeds[T], Length(avgSpeeds[T]) + 1);
+                  avgSpeeds[T][ High(avgSpeeds[T])] := (targetLetters[k+1] - targetLetters[k]-1) * 60 * 1000 /
+                    (time2 - time1); // букв/минуту
+                end;
+
+              end;
+
+            end; // if
+
+      end; // for i
+
+
+      delitel := 0;
+      sm := 0;
+      for b := 0 to High(avgSpeeds[T]) do
+      begin
+        inc(delitel);
+        sm := sm + avgSpeeds[T][b];
+      end;
+
+      if delitel > 0 then
+        SPP[CurrTaskNumber][T] := sm / delitel
+      else
+        SPP[CurrTaskNumber][T] := -1;
+    end; // for t
+
+  except
+    on E: Exception do
+      ShowMessage(E.ClassName + ' непредвиденная ошибка, с сообщением : ' +
+          E.Message + '. Сделайте снимок экрана и передайте его разработчику');
+  end;
+
+end;
+
+
+
+// indicator SPO
+procedure indSPO();
+var
+  T, i, j, k, b, time1, time2: Integer;
+  firstX, lastX, delitel: Integer;
+  sm: Double;
+begin
+
+  Try
+
+    for T := 1 to Intervals do // по временным промежуткам
+    begin
+
+      SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
+
+      for i := 0 to High(aTime) do // по всем строкам юзер-координат
+      begin
+
+        firstX := -1;
+        lastX := -1;
+        SetLength(targetLetters, 0);
+
+        // ищем сигнальные буквы в данной строке, которые попадают во временной промежуток
+
+        for j := 1 to 40 do
+          if (aTime[i][j] >= (T - 1) * multiplier + 1) and
+            (aTime[i][j] <= T * multiplier) then
+          begin
+            if firstX < 0 then
+              firstX := j;
+            lastX := j;
+          end;
+
+        // Если нашли первую и последнюю сигнальную буквы в этой строке, попадающию в нужный временной промежуток,
+        // Заполним массив targetLetters - в нем будут индексы всех сигнальных букв этой строки между индексами
+        if (firstX > 0) and (lastX > 0) then fillTargetLetters(i, firstX, lastX);
+
+        // Если сигнальных букв не менее 2, продолжаем рассчет
+        if Length(targetLetters) > 1 then
+          for k := 0 to High(targetLetters) do
+            // по всем сигнальным буквам - кандидатам
+            // если сигнальная буква была кликнута и она не последняя
+            if (aClicks[i][targetLetters[k]] > 0) and (k <> High(targetLetters)) then
+            begin
+
+              time1 := aClicks[i][targetLetters[k]]; // время клика по сигнальной букве
+
+              // Проверим, была ли кликнута следующая сигнальная буква
+              // Можно так сделать, т.к. рассматриваемая сигнальная буква не является последней сигнальной буквой в строке
+              // Тут нам надо НЕКЛИКНУТУЮ
+              if (aClicks[i][targetLetters[k+1]] = 0) then
+              begin
+                time2 := aTime[i][targetLetters[k+1]]; // Время установки курсора на следующую сигнальную букву
+                // считаем скорость
+                if (time2 - time1 > 0) then
+                begin
+                  SetLength(avgSpeeds[T], Length(avgSpeeds[T]) + 1);
+                  avgSpeeds[T][ High(avgSpeeds[T])] := (targetLetters[k+1] - targetLetters[k] - 1) * 60 * 1000 /
+                    (time2 - time1); // букв/минуту
+                end;
+
+              end;
+
+            end; // if
+
+      end; // for i
+
+
+      delitel := 0;
+      sm := 0;
+      for b := 0 to High(avgSpeeds[T]) do
+      begin
+        inc(delitel);
+        sm := sm + avgSpeeds[T][b];
+      end;
+
+      if delitel > 0 then
+        SPO[CurrTaskNumber][T] := sm / delitel
+      else
+        SPO[CurrTaskNumber][T] := -1;
+    end; // for t
+
+  except
+    on E: Exception do
+      ShowMessage(E.ClassName + ' непредвиденная ошибка, с сообщением : ' +
+          E.Message + '. Сделайте снимок экрана и передайте его разработчику');
+  end;
+
+end;
+
+
+
+// indicator SOP
+procedure indSOP();
+var
+  T, i, j, k, b, time1, time2: Integer;
+  firstX, lastX, delitel: Integer;
+  sm: Double;
+begin
+
+  Try
+
+    for T := 1 to Intervals do // по временным промежуткам
+    begin
+
+      SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
+
+      for i := 0 to High(aTime) do // по всем строкам юзер-координат
+      begin
+
+        firstX := -1;
+        lastX := -1;
+        SetLength(targetLetters, 0);
+
+        // ищем сигнальные буквы в данной строке, которые попадают во временной промежуток
+
+        for j := 1 to 40 do
+          if (aTime[i][j] >= (T - 1) * multiplier + 1) and
+            (aTime[i][j] <= T * multiplier) then
+          begin
+            if firstX < 0 then
+              firstX := j;
+            lastX := j;
+          end;
+
+        // Если нашли первую и последнюю сигнальную буквы в этой строке, попадающию в нужный временной промежуток,
+        // Заполним массив targetLetters - в нем будут индексы всех сигнальных букв этой строки между индексами
+        if (firstX > 0) and (lastX > 0) then fillTargetLetters(i, firstX, lastX);
+
+        // Если сигнальных букв не менее 2, продолжаем рассчет
+        if Length(targetLetters) > 1 then
+          for k := 0 to High(targetLetters) do
+            // по всем сигнальным буквам - кандидатам
+            // если сигнальная буква НЕ была кликнута и она не последняя
+            if (aClicks[i][targetLetters[k]] = 0) and (k <> High(targetLetters)) then
+            begin
+
+              time1 := aTime[i][targetLetters[k]]; // время установки курсора на сигнальную букву
+
+              // Проверим, была ли кликнута следующая сигнальная буква
+              // Можно так сделать, т.к. рассматриваемая сигнальная буква не является последней сигнальной буквой в строке
+              if (aClicks[i][targetLetters[k+1]] > 0) then
+              begin
+                time2 := aTime[i][targetLetters[k+1]]; // Время установки курсора на следующую сигнальную букву
+                // считаем скорость
+                if (time2 - time1 > 0) then
+                begin
+                  SetLength(avgSpeeds[T], Length(avgSpeeds[T]) + 1);
+                  avgSpeeds[T][ High(avgSpeeds[T])] := (targetLetters[k+1] - targetLetters[k]-1) * 60 * 1000 /
+                    (time2 - time1); // букв/минуту
+                end;
+
+              end;
+
+            end; // if
+
+      end; // for i
+
+
+      delitel := 0;
+      sm := 0;
+      for b := 0 to High(avgSpeeds[T]) do
+      begin
+        inc(delitel);
+        sm := sm + avgSpeeds[T][b];
+      end;
+
+      if delitel > 0 then
+        SOP[CurrTaskNumber][T] := sm / delitel
+      else
+        SOP[CurrTaskNumber][T] := -1;
+    end; // for t
+
+  except
+    on E: Exception do
+      ShowMessage(E.ClassName + ' непредвиденная ошибка, с сообщением : ' +
+          E.Message + '. Сделайте снимок экрана и передайте его разработчику');
+  end;
+
+end;
+
+
+
+
+
+// indicator SOO
+procedure indSOO();
+var
+  T, i, j, k, b, time1, time2: Integer;
+  firstX, lastX, delitel: Integer;
+  sm: Double;
+begin
+
+  Try
+
+    for T := 1 to Intervals do // по временным промежуткам
+    begin
+
+      SetLength(avgSpeeds[T], 0); // промежуточное хранение неагрегированных скоростей в разрезе временных промежутков
+
+      for i := 0 to High(aTime) do // по всем строкам юзер-координат
+      begin
+
+        firstX := -1;
+        lastX := -1;
+        SetLength(targetLetters, 0);
+
+        // ищем сигнальные буквы в данной строке, которые попадают во временной промежуток
+
+        for j := 1 to 40 do
+          if (aTime[i][j] >= (T - 1) * multiplier + 1) and
+            (aTime[i][j] <= T * multiplier) then
+          begin
+            if firstX < 0 then
+              firstX := j;
+            lastX := j;
+          end;
+
+        // Если нашли первую и последнюю сигнальную буквы в этой строке, попадающию в нужный временной промежуток,
+        // Заполним массив targetLetters - в нем будут индексы всех сигнальных букв этой строки между индексами
+        if (firstX > 0) and (lastX > 0) then fillTargetLetters(i, firstX, lastX);
+
+        // Если сигнальных букв не менее 2, продолжаем рассчет
+        if Length(targetLetters) > 1 then
+          for k := 0 to High(targetLetters) do
+            // по всем сигнальным буквам - кандидатам
+            // если сигнальная буква НЕ была кликнута и она не последняя
+            if (aClicks[i][targetLetters[k]] = 0) and (k <> High(targetLetters)) then
+            begin
+
+              time1 := aTime[i][targetLetters[k]]; // время установки курсора на сигнальную букву
+
+              // Проверим, была ли кликнута следующая сигнальная буква
+              // Можно так сделать, т.к. рассматриваемая сигнальная буква не является последней сигнальной буквой в строке
+              // ТУТ НАДО НЕКЛИКНУТУЮ
+              if (aClicks[i][targetLetters[k+1]] = 0) then
+              begin
+                time2 := aTime[i][targetLetters[k+1]]; // Время установки курсора на следующую сигнальную букву
+                // считаем скорость
+                if (time2 - time1 > 0) then
+                begin
+                  SetLength(avgSpeeds[T], Length(avgSpeeds[T]) + 1);
+                  avgSpeeds[T][ High(avgSpeeds[T])] := (targetLetters[k+1] - targetLetters[k]-1) * 60 * 1000 /
+                    (time2 - time1); // букв/минуту
+                end;
+
+              end;
+
+            end; // if
+
+      end; // for i
+
+
+      delitel := 0;
+      sm := 0;
+      for b := 0 to High(avgSpeeds[T]) do
+      begin
+        inc(delitel);
+        sm := sm + avgSpeeds[T][b];
+      end;
+
+      if delitel > 0 then
+        SOO[CurrTaskNumber][T] := sm / delitel
+      else
+        SOO[CurrTaskNumber][T] := -1;
+    end; // for t
+
+  except
+    on E: Exception do
+      ShowMessage(E.ClassName + ' непредвиденная ошибка, с сообщением : ' +
+          E.Message + '. Сделайте снимок экрана и передайте его разработчику');
+  end;
+
+end;
+
 
 // indicator SDK1O
 procedure indSDK1O();
@@ -1350,16 +1722,18 @@ begin
 
 end;
 
+
+// Подсчет промежуточной статистики по заданию
 procedure CountTask();
 var
   maxDimArr, i, j: Integer;
 begin
 
   // проверка условий на тупость
-  if (Length(aTime[0]) = 0) OR (Length(aX[0]) = 0) OR (Length(aY[0]) = 0) then
+  if (Length(aTime) < 2) then
   begin
     ShowMessage(
-      'При выполнении текущего задания испытуемый ни разу не сдвинул курсор! Программа будет завершена, необходимо пройти тест повторно!');
+      'При выполнении текущего задания испытуемый не просмотрел ни одной строки! Программа будет завершена, необходимо пройти тест повторно!');
     Application.Terminate;
     Exit;
   end;
@@ -1373,10 +1747,10 @@ begin
     maxDimArr := Length(aClicks);
   if maxDimArr < Length(aTime) then
     maxDimArr := Length(aTime);
-  if maxDimArr < Length(aX) then
-    maxDimArr := Length(aX);
-  if maxDimArr < Length(aY) then
-    maxDimArr := Length(aY);
+//  if maxDimArr < Length(aX) then
+//    maxDimArr := Length(aX);
+//  if maxDimArr < Length(aY) then
+//    maxDimArr := Length(aY);
 
   if Length(aLetters) < maxDimArr then
     ShowMessage('aLetters length problem! Сообщите разработчику!');
@@ -1386,32 +1760,32 @@ begin
     ShowMessage('aClicks length problem! Сообщите разработчику!');
   if Length(aTime) < maxDimArr then
     ShowMessage('aTime length problem! Сообщите разработчику!');
-  if Length(aX) < maxDimArr then
-    ShowMessage('aX length problem! Сообщите разработчику!');
-  if Length(aY) < maxDimArr then
-    ShowMessage('aY length problem! Сообщите разработчику!');
+//  if Length(aX) < maxDimArr then
+//    ShowMessage('aX length problem! Сообщите разработчику!');
+//  if Length(aY) < maxDimArr then
+//    ShowMessage('aY length problem! Сообщите разработчику!');
 
-  if (( High(aTime[ High(aTime)]) <> High(aX[ High(aX)])) OR
-      ( High(aY[ High(aY)]) <> High(aX[ High(aX)])) OR
-      ( High(aTime[ High(aTime)]) <> High(aY[ High(aY)]))) then
-    ShowMessage('Triple aX, aY, aTime length problem! Сообщите разработчику!');
+//  if (( High(aTime[ High(aTime)]) <> High(aX[ High(aX)])) OR
+//      ( High(aY[ High(aY)]) <> High(aX[ High(aX)])) OR
+//      ( High(aTime[ High(aTime)]) <> High(aY[ High(aY)]))) then
+//    ShowMessage('Triple aX, aY, aTime length problem! Сообщите разработчику!');
 
-  // Если мы только что перешли на новую строку и тест кончился - в триаде массивов
-  // будет пустой подмассив - надо его удалить, иначе расчеты закосячатся
+  // Если мы только что перешли на новую строку и тест кончился - удалим эту последнюю строку из рассмотрения
   // Удаляем так же в других массивов, чтобы сохранить одинаковую размерность
-  if (Length(aX[ High(aX)]) = 0) then
+  // Проверяем по 2-му элементу, т.к. 1-й элемент проставится автоматически при генерации строки
+  if (aTime[ High(aTime)][2] = 0) then
   begin
     SetLength(aTime, Length(aTime) - 1);
-    SetLength(aX, Length(aX) - 1);
-    SetLength(aY, Length(aY) - 1);
     SetLength(aSignal, Length(aSignal) - 1);
     SetLength(aLetters, Length(aLetters) - 1);
     SetLength(aClicks, Length(aClicks) - 1);
+    // SetLength(aX, Length(aX) - 1);
+    // SetLength(aY, Length(aY) - 1);
   end;
 
   // НЕ должно быть строк, в которых нет ни одной юзер-координаты
-  for i := 0 to High(aX) do
-    if (Length(aX[i]) = 0) then
+  for i := 0 to High(aTime) do
+    if (aTime[i][2] = 0) then
     begin
       ShowMessage(
         'Обнаружена строка без координат! Тест выполнялся некорректно! Программа будет завершена, необходимо пройти тест повторно!');
@@ -1421,16 +1795,16 @@ begin
 
   // Сдвигаем метки времени так, чтобы начало задания было нулем
   for i := 0 to High(aTime) do
-    for j := 0 to High(aTime[i]) do
+    for j := 1 to 40 do
       aTime[i][j] := aTime[i][j] - TaskStartTime;
   for i := 0 to High(aClicks) do
-    for j := 1 to 40 do // !!! 1 to 40
+    for j := 1 to 40 do
       if (aClicks[i][j] > 0) then
         aClicks[i][j] := aClicks[i][j] - TaskStartTime;
 
   // T
   indT();
-  // Form1.Label8.Caption := 'T: ' + inttostr(T[CurrTaskNumber]); // del
+
 
   // indicator KB
   indKB();
@@ -1438,11 +1812,33 @@ begin
   // indicator PZ
   indPZ();
 
-  // indicator OZ
+  // indicator OZ - ОТ НЕГО ЗАВИСИТ KO
   indOZ();
 
-  // indicator ONZ
+  // indicator ONZ - ОТ НЕГО ЗАВИСИТ KO
   indONZ();
+
+  // indicator KO
+  indKO();
+
+  // indicator SDK
+  indSDK();
+
+   // indicator SPP
+//  indSDK1P();
+  indSPP();
+
+  // indicator SPO
+  indSPO();
+
+  // indicator SOP
+  indSOP();
+
+  // indicator SOO
+  indSOO();
+
+{
+
 
   // indicator KPZ
   indKPZ();
@@ -1459,14 +1855,12 @@ begin
   // indicator ONZPZ
   indONZPZ();
 
-  // indicator KO
-  indKO();
+
 
   // indicator KT
   indKT();
 
-  // indicator SDK
-  indSDK();
+
 
   // indicator SDK1P
   indSDK1P();
@@ -1482,77 +1876,56 @@ begin
 
   // indicator SDK3O
   indSDK3O();
+}
 
-  {
-    signalCorrect := 0;
-    signalMiss := 0;
-    signalWrong := 0;
-    for i := 0 to High(aSignal) do
-    begin
-
-    if i <> High(aSignal) then
-    lim1 := 40
-    else
-    begin
-    // высчитаем до какой буквы дошел юзер
-    lim1 := Form1.GetLetterIndexByCoords(aX[i][ High(aX[i])]);
-
-    end;
-
-    for j := 1 to lim1 do
-    begin
-    if ((aSignal[i][j]) and (aClicks[i][j] > 0)) then
-    inc(signalCorrect);
-    if ((aSignal[i][j]) and (aClicks[i][j] = 0)) then
-    inc(signalMiss);
-    if ((NOT aSignal[i][j]) and (aClicks[i][j] > 0)) then
-    inc(signalWrong);
-    end;
-    end;
-    Form1.Label7.Caption := 'Верно сигнальных нажато: ' + inttostr(signalCorrect)
-    + ', сигнальных пропущено: ' + inttostr(signalMiss)
-    + ', ошибочно нажатых: ' + inttostr(signalWrong);
-    }
 
 end;
 
+
+
 function ArrayProccessingInteger(arr: TMatrixI; var fl: textfile;
   indName: string): TVector;
-{var
+var
   m, ta: Integer;
   res: TVector;
-  }
-begin
-                {
-  for m := 1 to 6 do
-    res[m] := 0;
-  writeln(fl, '');
-  writeln(fl, '');
-  for ta := 1 to 8 do
-    for m := 1 to 5 do
-      res[m] := res[m] + arr[ta][m];
-  for m := 1 to 5 do
-    res[m] := res[m] / 8;
-  for m := 1 to 5 do
-    res[6] := res[6] + res[m];
-  res[6] := res[6] / 5;
 
-  write(fl, indName + ' по минутам: ');
-  for ta := 1 to 8 do
+begin
+
+  for m := 1 to Intervals+1 do
+    res[m] := 0;
+
+  writeln(fl, '');
+  writeln(fl, '');
+
+  for ta := 1 to TasksCount do
+    for m := 1 to Intervals do
+      res[m] := res[m] + arr[ta][m];
+
+  for m := 1 to Intervals do
+    res[m] := res[m] / TasksCount;
+
+  for m := 1 to Intervals do
+    res[Intervals+1] := res[Intervals+1] + res[m];
+  res[Intervals+1] := res[Intervals+1] / Intervals;
+
+  write(fl, indName + ' по минутам абсолютные значения: ');
+
+  for ta := 1 to TasksCount do
   begin
     writeln(fl, '');
-    write(fl, 'Задание ' + inttostr(ta) + ': ');
-    for m := 1 to 5 do
+    write(fl, 'Задание ' + inttostr(ta) +' ('+inttostr(TestTypes[ta])+ '): ');
+    for m := 1 to Intervals do
       write(fl, inttostr(arr[ta][m]) + ' ');
   end;
   writeln(fl, '');
-  write(fl, 'Усредненное: ');
-  for m := 1 to 6 do
+  write(fl, 'Усредненное по минутам: ');
+
+  for m := 1 to Intervals+1 do
   begin
-    if m = 6 then
+    if m = Intervals+1 then
     begin
       writeln(fl, '');
-      Write(fl, 'За 5 минут в целом: ');
+      Write(fl, 'За '+inttostr(Intervals)+' минут(ы) в среднем: ');
     end;
     if res[m] < 0 then
       write(fl, 'н/д ')
@@ -1561,68 +1934,470 @@ begin
   end;
 
   Result := res;
-             }
+
 end;
+
+
+
+// вычислить стандартное отклонение для вектора TVectorForIndT
+function StdDev_Float_Vector(data: TVectorForIndT; lTestType:integer):Double;
+var
+  i, divider: integer;
+  std, avg: Double;
+begin
+
+  avg := 0;
+  for i := 1 to TasksCount do
+    begin
+      if ((TestTypes[i] = lTestType) or (lTestType < 1)) then avg := avg + data[i];
+    end;
+
+ if lTestType < 1 then divider := TasksCount
+                  else divider := Round(TasksCount/2);
+
+  avg := avg / divider;
+  std := 0;
+
+  for i := 1 to TasksCount do
+     if (TestTypes[i] = lTestType) or (lTestType < 1) then
+       std := std+(data[i]-avg)*(data[i]-avg);
+
+ if lTestType < 1 then divider := TasksCount-1
+                  else divider := Round(TasksCount/2)-1;
+
+  if (divider = 0)
+    then std := -1
+    else std := std/divider;
+
+  if std>=0 then Result := sqrt(std)
+            else Result := -1;
+end;
+
+
+// вычислить стандартное отклонение для ВСЕХ минут
+// Передаем массивчег и НОМЕР ИНТЕРВАЛА
+function StdDev_Float_Interval_All(data: TMatrix; lTestType:integer):Double;
+var
+  i, j, divider: integer;
+  std, avg: Double;
+begin
+
+  avg := 0;
+  for i := 1 to TasksCount do
+    for j := 1 to Intervals do
+    begin
+      if ((TestTypes[i] = lTestType) or (lTestType < 1)) then avg := avg + data[i][j];
+    end;
+
+ if lTestType < 1 then divider := TasksCount * Intervals
+                  else divider := Round(TasksCount * Intervals/2);
+
+  avg := avg / divider;
+  std := 0;
+
+  for i := 1 to TasksCount do
+    for j := 1 to Intervals do
+     if (TestTypes[i] = lTestType) or (lTestType < 1) then
+       std := std+(data[i][j]-avg)*(data[i][j]-avg);
+
+ if lTestType < 1 then divider := TasksCount * Intervals-1
+                  else divider := Round(TasksCount * Intervals/2)-1;
+
+  if (divider = 0)
+    then std := -1
+    else std := std/divider;
+
+  if std>=0 then Result := sqrt(std)
+            else Result := -1;
+end;
+
+
+// вычислить стандартное отклонение для определенной минуты
+// Передаем массивчег и НОМЕР ИНТЕРВАЛА
+function StdDev_Float_Interval(data: TMatrix; IntervalID: integer; lTestType:integer):Double;
+var
+  i, divider: integer;
+  std, avg: Double;
+begin
+
+  avg := 0;
+  for i := 1 to TasksCount do
+    begin
+      if ((TestTypes[i] = lTestType) or (lTestType < 1)) then avg := avg + data[i][IntervalID];
+    end;
+
+ if lTestType < 1 then divider := TasksCount
+                  else divider := Round(TasksCount/2);
+
+  avg := avg / divider;
+  std := 0;
+
+  for i := 1 to TasksCount do
+     if (TestTypes[i] = lTestType) or (lTestType < 1) then
+       std := std+(data[i][IntervalID]-avg)*(data[i][IntervalID]-avg);
+
+ if lTestType < 1 then divider := TasksCount-1
+                  else divider := Round(TasksCount/2)-1;
+
+  if (divider = 0)
+    then std := -1
+    else std := std/divider;
+
+  if std>=0 then Result := sqrt(std)
+            else Result := -1;
+end;
+
+
+
+
+// вычислить стандартное отклонение для ВСЕХ минут
+// Передаем массивчег и НОМЕР ИНТЕРВАЛА
+function StdDev_Int_Interval_All(data: TMatrixI; lTestType:integer):Double;
+var
+  i, j, divider: integer;
+  std, avg: Double;
+begin
+
+  avg := 0;
+  for i := 1 to TasksCount do
+    for j := 1 to Intervals do
+    begin
+      if ((TestTypes[i] = lTestType) or (lTestType < 1)) then avg := avg + data[i][j];
+    end;
+
+ if lTestType < 1 then divider := TasksCount * Intervals
+                  else divider := Round(TasksCount * Intervals/2);
+
+  avg := avg / divider;
+  std := 0;
+
+  for i := 1 to TasksCount do
+    for j := 1 to Intervals do
+     if (TestTypes[i] = lTestType) or (lTestType < 1) then
+       std := std+(data[i][j]-avg)*(data[i][j]-avg);
+
+ if lTestType < 1 then divider := TasksCount * Intervals-1
+                  else divider := Round(TasksCount * Intervals/2)-1;
+
+  if (divider = 0)
+    then std := -1
+    else std := std/divider;
+
+  if std>=0 then Result := sqrt(std)
+            else Result := -1;
+end;
+
+
+// вычислить стандартное отклонение для определенной минуты
+// Передаем массивчег и НОМЕР ИНТЕРВАЛА
+function StdDev_Int_Interval(data: TMatrixI; IntervalID: integer; lTestType:integer):Double;
+var
+  i, divider: integer;
+  std, avg: Double;
+begin
+
+  avg := 0;
+  for i := 1 to TasksCount do
+    begin
+      if ((TestTypes[i] = lTestType) or (lTestType < 1)) then avg := avg + data[i][IntervalID];
+    end;
+
+ if lTestType < 1 then divider := TasksCount
+                  else divider := Round(TasksCount/2);
+
+  avg := avg / divider;
+  std := 0;
+
+  for i := 1 to TasksCount do
+     if (TestTypes[i] = lTestType) or (lTestType < 1) then
+       std := std+(data[i][IntervalID]-avg)*(data[i][IntervalID]-avg);
+
+ if lTestType < 1 then divider := TasksCount-1
+                  else divider := Round(TasksCount/2)-1;
+
+  if (divider = 0)
+    then std := -1
+    else std := std/divider;
+
+  if std>=0 then Result := sqrt(std)
+            else Result := -1;
+end;
+
+
+
+
+function ArrayOtkonenieInteger_for_TST(arr: TMatrixI; var fl: textfile;
+  indName: string; lTestType: byte): TVector;
+var
+  m: Integer;
+  res: TVector;
+  str : string;
+begin
+
+  for m := 1 to Intervals+1 do
+    res[m] := 0;
+
+  for m := 1 to Intervals do
+    res[m] := StdDev_Int_Interval(arr, m, lTestType);
+
+  res[Intervals+1] := StdDev_Int_Interval_All(arr, lTestType);
+
+  if (lTestType<1) then str := 'Тестов 1 и 2'
+                   else str := 'Теста '+inttostr(lTestType);
+
+  writeln(fl, '');
+  write(fl, 'Стандартное отклонение по минутам по всем заданиям '+str+': ');
+
+  for m := 1 to Intervals do
+  begin
+    if res[m] < 0 then
+      write(fl, 'н/д ')
+    else
+      write(fl, FormatFloat('######0.###', res[m]) + ' ');
+  end;
+
+  writeln(fl, '');
+  write(fl, 'Стандартное отклонение за все минуты в целом по всем заданиям '+str+': ');
+  if res[Intervals+1] < 0 then
+    write(fl, 'н/д ')
+  else
+    write(fl, FormatFloat('######0.###', res[Intervals+1]) + ' ');
+
+  Result := res;
+
+end;
+
+
+
+
+function ArrayOtkonenieFloat_for_TST(arr: TMatrix; var fl: textfile;
+  indName: string; lTestType: byte): TVector;
+var
+  m: Integer;
+  res: TVector;
+  str : string;
+begin
+
+  for m := 1 to Intervals+1 do
+    res[m] := 0;
+
+  for m := 1 to Intervals do
+    res[m] := StdDev_Float_Interval(arr, m, lTestType);
+
+  res[Intervals+1] := StdDev_Float_Interval_All(arr, lTestType);
+
+  if (lTestType<1) then str := 'Тестов 1 и 2'
+                   else str := 'Теста '+inttostr(lTestType);
+
+  writeln(fl, '');
+  write(fl, 'Стандартное отклонение по минутам по всем заданиям '+str+': ');
+
+  for m := 1 to Intervals do
+  begin
+    if res[m] < 0 then
+      write(fl, 'н/д ')
+    else
+      write(fl, FormatFloat('######0.###', res[m]) + ' ');
+  end;
+
+  writeln(fl, '');
+  write(fl, 'Стандартное отклонение за все минуты в целом по всем заданиям '+str+': ');
+  if res[Intervals+1] < 0 then
+    write(fl, 'н/д ')
+  else
+    write(fl, FormatFloat('######0.###', res[Intervals+1]) + ' ');
+
+  Result := res;
+
+end;
+
+
+
+
+
+
+
+function ArrayProccessingInteger_for_TST(arr: TMatrixI; var fl: textfile;
+  indName: string; lTestType: byte): TVector;
+var
+  m, ta: Integer;
+  res: TVector;
+begin
+
+  for m := 1 to Intervals+1 do
+    res[m] := 0;
+
+  for ta := 1 to TasksCount do
+    for m := 1 to Intervals do
+      if TestTypes[ta] = lTestType then
+        begin
+          res[m] := res[m] + arr[ta][m];
+        end;
+
+  for m := 1 to Intervals do
+    res[m] := 2 * res[m] / TasksCount;
+
+  for m := 1 to Intervals do
+    res[Intervals+1] := res[Intervals+1] + res[m];
+
+  res[Intervals+1] := res[Intervals+1] / Intervals;
+
+  writeln(fl, '');
+  write(fl, 'Среднее по минутам по всем заданиям Теста '+inttostr(lTestType)+': ');
+
+  for m := 1 to Intervals+1 do
+  begin
+    if m = Intervals+1 then
+    begin
+      writeln(fl, '');
+      Write(fl, 'За '+inttostr(Intervals)+' минут(ы) в среднем по всем заданиям Теста '+inttostr(lTestType)+': ');
+    end;
+    if res[m] < 0 then
+      write(fl, 'н/д ')
+    else
+      write(fl, FormatFloat('######0.###', res[m]) + ' ');
+  end;
+
+  Result := res;
+
+end;
+
+
+
+function ArrayProccessingFloat_for_TST(arr: TMatrix; var fl: textfile;
+  indName: string; lTestType: byte): TVector;
+var
+  m, ta, dtmp: Integer;
+  deli_tst : array [1 .. Intervals] of byte;
+  tst: TVector;
+begin
+
+  for m := 1 to Intervals do
+    deli_tst[m] := 0;
+
+  for m := 1 to Intervals+1 do tst[m] := 0;
+
+ // Расчет по Тесту 1 и 2 раздельно
+  for ta := 1 to TasksCount do
+    for m := 1 to Intervals do
+      if arr[ta][m] > -0.0001 then
+        if TestTypes[ta] = lTestType then
+          begin
+            tst[m] := tst[m] + arr[ta][m];
+            inc(deli_tst[m]);
+          end;
+
+
+  for m := 1 to Intervals do
+    if deli_tst[m] = 0 then
+      tst[m] := -1
+    else
+      tst[m] := tst[m] / deli_tst[m];
+
+
+  dtmp := 0;
+  for m := 1 to Intervals do
+    if tst[m] > -0.0001 then
+    begin
+      inc(dtmp);
+      tst[Intervals+1] := tst[Intervals+1] + tst[m];
+    end;
+  if dtmp = 0 then
+    tst[Intervals+1] := -1
+  else
+    tst[Intervals+1] := tst[Intervals+1] / dtmp;
+
+
+ // Усредненное по минутам в разрезе типов заданий (1-й или 2-й тип)
+  writeln(fl, '');
+  write(fl, 'Среднее по минутам по всем заданиям Теста '+inttostr(lTestType)+': ');
+  for m := 1 to Intervals+1 do
+  begin
+    if m = Intervals+1 then
+    begin
+      writeln(fl, '');
+      Write(fl, 'За '+inttostr(Intervals)+' минут(ы) в среднем по всем заданиям Теста '+inttostr(lTestType)+': ');
+    end;
+    if tst[m] < 0 then
+      write(fl, 'н/д ')
+    else
+      write(fl, FormatFloat('######0.###', tst[m]) + ' ');
+  end;
+
+  Result := tst;
+
+end;
+
+
 
 function ArrayProccessingFloat(arr: TMatrix; var fl: textfile;
   indName: string): TVector;
-{var
+var
   m, ta, dtmp: Integer;
-  deli: array [1 .. 5] of byte;
-  res: TVector;}
+  deli: array [1 .. Intervals] of byte;
+  res: TVector;
 begin
-{
-  for m := 1 to 6 do
+
+  for m := 1 to Intervals+1 do
     res[m] := 0;
-  for m := 1 to 5 do
+
+  for m := 1 to Intervals do
     deli[m] := 0;
+
   writeln(fl, '');
   writeln(fl, '');
-  for ta := 1 to 8 do
-    for m := 1 to 5 do
+
+  for ta := 1 to TasksCount do
+    for m := 1 to Intervals do
       if arr[ta][m] > -0.0001 then
       begin
         res[m] := res[m] + arr[ta][m];
         inc(deli[m]);
       end;
+
   // расчет среднего по каждой минуте за все задания
-  for m := 1 to 5 do
+  for m := 1 to Intervals do
     if deli[m] = 0 then
       res[m] := -1
     else
       res[m] := res[m] / deli[m];
+
   // расчет среднего за все минуты по всем заданиям
   dtmp := 0;
-  for m := 1 to 5 do
+  for m := 1 to Intervals do
     if res[m] > -0.0001 then
     begin
       inc(dtmp);
-      res[6] := res[6] + res[m];
+      res[Intervals+1] := res[Intervals+1] + res[m];
     end;
   if dtmp = 0 then
-    res[6] := -1
+    res[Intervals+1] := -1
   else
-    res[6] := res[6] / dtmp;
+    res[Intervals+1] := res[Intervals+1] / dtmp;
 
-  write(fl, indName + ' по минутам: ');
-  for ta := 1 to 8 do
+  // Вывод в файл
+
+  write(fl, indName + ' по минутам абсолютные значения: ');
+  for ta := 1 to TasksCount do
   begin
     writeln(fl, '');
-    write(fl, 'Задание ' + inttostr(ta) + ': ');
-    for m := 1 to 5 do
+    write(fl, 'Задание ' + inttostr(ta) +' ('+inttostr(TestTypes[ta])+ '): ');
+    for m := 1 to Intervals do
       if arr[ta][m] < 0 then
         write(fl, 'н/д ')
       else
         write(fl, FormatFloat('######0.###', arr[ta][m]) + ' ');
   end;
+
+  // Усредненное по минутам
   writeln(fl, '');
-  write(fl, 'Усредненное: ');
-  for m := 1 to 6 do
+  write(fl, 'Усредненное по минутам: ');
+  for m := 1 to Intervals+1 do
   begin
-    if m = 6 then
+    if m = Intervals+1 then
     begin
       writeln(fl, '');
-      Write(fl, 'За 5 минут в целом: ');
+      Write(fl, 'За '+inttostr(Intervals)+' минут(ы) в среднем: ');
     end;
     if res[m] < 0 then
       write(fl, 'н/д ')
@@ -1631,7 +2406,7 @@ begin
   end;
 
   Result := res;
-                }
+
 end;
 
 function LinesCount(const Filename: string): Integer;
@@ -1661,39 +2436,98 @@ begin
   CloseHandle(HFile);
 end;
 
+
+procedure ExcelOneIndicator(var f:textfile; _IND_T1, IND_Otkl_T1, _IND_T2, IND_Otkl_T2, _IND_T, IND_Otkl_T: TVector);
+var m: integer;
+begin
+
+    for m := 1 to Intervals+1 do
+    begin
+      if _IND_T1[m] > -0.0001 then write(f, FormatFloat('######0.###', _IND_T1[m]));
+      write(f, ';'); // в отдельном операторе, чтоб вставлялась, даже если значение пропускается!
+    end;
+    for m := 1 to Intervals+1 do
+    begin
+      if IND_Otkl_T1[m] > -0.0001 then write(f, FormatFloat('######0.###', IND_Otkl_T1[m]));
+      write(f, ';'); // в отдельном операторе, чтоб вставлялась, даже если значение пропускается!
+    end;
+    for m := 1 to Intervals+1 do
+    begin
+      if _IND_T2[m] > -0.0001 then write(f, FormatFloat('######0.###', _IND_T2[m]));
+      write(f, ';'); // в отдельном операторе, чтоб вставлялась, даже если значение пропускается!
+    end;
+    for m := 1 to Intervals+1 do
+    begin
+      if IND_Otkl_T2[m] > -0.0001 then write(f, FormatFloat('######0.###', IND_Otkl_T2[m]));
+      write(f, ';'); // в отдельном операторе, чтоб вставлялась, даже если значение пропускается!
+    end;
+    for m := 1 to Intervals+1 do
+    begin
+      if _IND_T[m] > -0.0001 then write(f, FormatFloat('######0.###', _IND_T[m]));
+      write(f, ';'); // в отдельном операторе, чтоб вставлялась, даже если значение пропускается!
+    end;
+    for m := 1 to Intervals+1 do
+    begin
+      if IND_Otkl_T[m] > -0.0001 then write(f, FormatFloat('######0.###', IND_Otkl_T[m]));
+      write(f, ';'); // в отдельном операторе, чтоб вставлялась, даже если значение пропускается!
+    end;
+end;
+
+procedure ExcelAddHeader(var f:textfile; indname:string);
+var m,i: integer;
+begin
+
+ for i := 1 to 2 do
+ begin
+   for m := 1 to Intervals+1 do
+     write(f, inttostr(i)+indname+'_M'+inttostr(m)+';');
+   for m := 1 to Intervals+1 do
+     write(f, inttostr(i)+indname+'_SD'+inttostr(m)+';');
+ end;
+
+ for m := 1 to Intervals+1 do
+   write(f, '12'+indname+'_M'+inttostr(m)+';');
+ for m := 1 to Intervals+1 do
+   write(f, '12'+indname+'_SD'+inttostr(m)+';');
+
+end;
+
+
+
 procedure ToCSV();
 var
   f, fl: textfile;
   ta: Integer;
   sumd: Double;
   rownum: Integer;
-  _T: Double;
-  _KB: TVector;
-  _PZ: TVector;
-  _OZ: TVector;
-  _ONZ: TVector;
-  _KPZ: TVector;
-  _KOZ: TVector;
-  _KONZ: TVector;
-  _OZPZ: TVector;
-  _ONZPZ: TVector;
-  _KO: TVector;
-  _KT: TVector;
-  _SDK: TVector;
-  _SDK1P: TVector;
-  _SDK1O: TVector;
-  _SDK2: TVector;
-  _SDK3P: TVector;
-  _SDK3O: TVector;
+  _T, _T_AVG_T1, _T_AVG_T2: Double;
+  _T_Otkl, _T_Otkl_T1, _T_Otkl_T2: Double;
+  _KB, _KB_T1, _KB_T2: TVector;
+  _KB_Otkl, _KB_Otkl_T1, _KB_Otkl_T2: TVector;
+  _PZ, _PZ_T1, _PZ_T2: TVector;
+  _PZ_Otkl, _PZ_Otkl_T1, _PZ_Otkl_T2: TVector;
+//  _OZ: TVector;
+//  _ONZ: TVector;
+  _KO, _KO_T1, _KO_T2: TVector;
+  _KO_Otkl, _KO_Otkl_T1, _KO_Otkl_T2: TVector;
+  _SDK, _SDK_T1, _SDK_T2: TVector;
+  _SDK_Otkl, _SDK_Otkl_T1, _SDK_Otkl_T2: TVector;
+  _SPP, _SPP_T1, _SPP_T2: TVector;
+  _SPP_Otkl, _SPP_Otkl_T1, _SPP_Otkl_T2: TVector;
+  _SPO, _SPO_T1, _SPO_T2: TVector;
+  _SPO_Otkl, _SPO_Otkl_T1, _SPO_Otkl_T2: TVector;
+  _SOP, _SOP_T1, _SOP_T2: TVector;
+  _SOP_Otkl, _SOP_Otkl_T1, _SOP_Otkl_T2: TVector;
+  _SOO, _SOO_T1, _SOO_T2: TVector;
+  _SOO_Otkl, _SOO_Otkl_T1, _SOO_Otkl_T2: TVector;
+
   CFile: THandle;
 begin
-  // today := Now;
-  // AssignFile(f, ExtractfileDir(Application.ExeName) + '\' + FormatDateTime
-  // ('yyyy_mm_dd_hh_nn_ss', today) + '_' + 'NAME' + '.csv');
+
   try
 
     AssignFile(f, ExtractfileDir(Application.ExeName) + '\' + 'results.csv');
-    AssignFile(fl, ExtractfileDir(Application.ExeName) + '\' + 'last_log.txt');
+    AssignFile(fl, ExtractfileDir(Application.ExeName) + '\' + 'last_log_'+FormatDateTime('yyyy_mm_dd_hh_nn_ss', Now)+'.txt');
 
     Rewrite(fl);
 
@@ -1715,11 +2549,22 @@ begin
     begin
       rownum := 1;
       Rewrite(f);
-      write(f, 'N;NAME;GEN;AGE;T;');
+      write(f, 'N;NAME;GEN;AGE;1T_M;1T_SD;2Т_M;2T_SD;12Т_M;12T_SD;');
+
+      ExcelAddHeader(f, 'KB');
+      ExcelAddHeader(f, 'PZ');
+      ExcelAddHeader(f, 'KO');
+      ExcelAddHeader(f, 'S');
+      ExcelAddHeader(f, 'SPP');
+      ExcelAddHeader(f, 'SPO');
+      ExcelAddHeader(f, 'SOP');
+      ExcelAddHeader(f, 'SOO');
+      writeln(f);// Не надо тут точку с запятой!
+
+{      write(f,
+        '1KB_M1;1KB_M2;1KB_M3;1KB_M4;1KB_M5;1KB_SD1;1KB_SD2;1KB_SD3;1KB_SD4;1KB_SD5;2KB_M1;2KB_M2;2KB_M3;2KB_M4;2KB_M5;2KB_SD1;2KB_SD2;2KB_SD3;2KB_SD4;2KB_SD5;12KB_M1;12KB_M2;12KB_M3;12KB_M4;12KB_M5;12KB_SD1;12KB_SD2;12KB_SD3;12KB_SD4;12KB_SD5;');
       write(f,
-        'KB1;PZ1;OZ1;ONZ1;KPZ1;KOZ1;KONZ1;OZPZ1;ONZPZ1;KO1;KT1;SDK1;SDK1P1;SDK1O1;SDK21;SDK3P1;SDK3O1;');
-      write(f,
-        'KB2;PZ2;OZ2;ONZ2;KPZ2;KOZ2;KONZ2;OZPZ2;ONZPZ2;KO2;KT2;SDK2;SDK1P2;SDK1O2;SDK22;SDK3P2;SDK3O2;');
+        '1PZ_M1;1PZ_M2;1PZ_M3;1PZ_M4;1PZ_M5;1PZ_SD1;1PZ_SD2;1PZ_SD3;1PZ_SD4;1PZ_SD5;2PZ_M1;2PZ_M2;2PZ_M3;2PZ_M4;2PZ_M5;2PZ_SD1;2PZ_SD2;2PZ_SD3;2PZ_SD4;2PZ_SD5;12PZ_M1;12PZ_M2;12PZ_M3;12PZ_M4;12PZ_M5;12PZ_SD1;12PZ_SD2;12PZ_SD3;12PZ_SD4;12PZ_SD5;');
       write(f,
         'KB3;PZ3;OZ3;ONZ3;KPZ3;KOZ3;KONZ3;OZPZ3;ONZPZ3;KO3;KT3;SDK3;SDK1P3;SDK1O3;SDK23;SDK3P3;SDK3O3;');
       write(f,
@@ -1728,6 +2573,7 @@ begin
         'KB5;PZ5;OZ5;ONZ5;KPZ5;KOZ5;KONZ5;OZPZ5;ONZPZ5;KO5;KT5;SDK5;SDK1P5;SDK1O5;SDK25;SDK3P5;SDK3O5;');
       writeln(f,
         'KB;PZ;OZ;ONZ;KPZ;KOZ;KONZ;OZPZ;ONZPZ;KO;KT;SDK;SDK1P;SDK1O;SDK2;SDK3P;SDK3O;');
+}
     end;
 
     write(f, inttostr(rownum) + ';' + user_name + ';' + inttostr(user_gender)
@@ -1738,97 +2584,129 @@ begin
     for ta := 1 to TasksCount do
       sumd := sumd + T[ta];
     _T := sumd / TasksCount;
+
+    _T_AVG_T1 := 0;
+    for ta := 1 to TasksCount do
+      if TestTypes[ta] = 1 then _T_AVG_T1 := _T_AVG_T1 + T[ta];
+    _T_AVG_T1 := _T_AVG_T1 / Round(TasksCount/2);
+
+    _T_AVG_T2 := 0;
+    for ta := 1 to TasksCount do
+      if TestTypes[ta] = 2 then _T_AVG_T2 := _T_AVG_T2 + T[ta];
+    _T_AVG_T2 := _T_AVG_T2 / Round(TasksCount/2);
+
+    _T_Otkl:= StdDev_Float_Vector(T, 0);
+    _T_Otkl_T1:= StdDev_Float_Vector(T, 1);
+    _T_Otkl_T2:= StdDev_Float_Vector(T, 2);
+
     write(fl, 'T по заданиям: ');
     for ta := 1 to TasksCount do
     begin
       writeln(fl, '');
-      write(fl, 'Задание ' + inttostr(ta) + ': ' + FormatFloat('######0.###',
-          T[ta]));
+      write(fl, 'Задание ' + inttostr(ta) +' ('+inttostr(TestTypes[ta])+ '): ' + FormatFloat('######0.###', T[ta]));
     end;
     writeln(fl, '');
-    write(fl, 'Усредненное: ' + FormatFloat('######0.###', _T));
+
+    writeln(fl, 'Среднее значение по Тесту 1: ' + FormatFloat('######0.###', _T_AVG_T1));
+    writeln(fl, 'Среднее значение по Тесту 2: ' + FormatFloat('######0.###', _T_AVG_T2));
+    writeln(fl, 'Среднее значение по Тестам 1 и 2: ' + FormatFloat('######0.###', _T));
+
+    if _T_Otkl_T1 > -0.0001
+      then writeln(fl, 'Стандартное отклонение по Тесту 1: ' + FormatFloat('######0.###', _T_Otkl_T1))
+      else writeln(fl, 'Стандартное отклонение по Тесту 1: н/д');
+
+    if _T_Otkl_T2 > -0.0001
+      then writeln(fl, 'Стандартное отклонение по Тесту 2: ' + FormatFloat('######0.###', _T_Otkl_T2))
+      else writeln(fl, 'Стандартное отклонение по Тесту 2: н/д');
+
+    if _T_Otkl > -0.0001
+      then write(fl, 'Стандартное отклонение по Тестам 1 и 2: ' + FormatFloat('######0.###', _T_Otkl))
+      else writeln(fl, 'Стандартное отклонение по Тестам 1 и 2: н/д');
 
     _KB := ArrayProccessingInteger(KB, fl, 'KB');
+    _KB_T1 := ArrayProccessingInteger_for_TST(KB, fl, 'KB', 1);
+    _KB_T2 := ArrayProccessingInteger_for_TST(KB, fl, 'KB', 2);
+    _KB_Otkl_T1 := ArrayOtkonenieInteger_for_TST(KB, fl, 'KB', 1);
+    _KB_Otkl_T2 := ArrayOtkonenieInteger_for_TST(KB, fl, 'KB', 2);
+    _KB_Otkl := ArrayOtkonenieInteger_for_TST(KB, fl, 'KB', 0);
+
     _PZ := ArrayProccessingInteger(PZ, fl, 'PZ');
-    _OZ := ArrayProccessingInteger(OZ, fl, 'OZ');
-    _ONZ := ArrayProccessingInteger(ONZ, fl, 'ONZ');
+    _PZ_T1 := ArrayProccessingInteger_for_TST(PZ, fl, 'PZ', 1);
+    _PZ_T2 := ArrayProccessingInteger_for_TST(PZ, fl, 'PZ', 2);
+    _PZ_Otkl_T1 := ArrayOtkonenieInteger_for_TST(PZ, fl, 'PZ', 1);
+    _PZ_Otkl_T2 := ArrayOtkonenieInteger_for_TST(PZ, fl, 'PZ', 2);
+    _PZ_Otkl := ArrayOtkonenieInteger_for_TST(PZ, fl, 'PZ', 0);
 
-    _KPZ := ArrayProccessingFloat(KPZ, fl, 'KPZ');
-    _KOZ := ArrayProccessingFloat(KOZ, fl, 'KOZ');
-    _KONZ := ArrayProccessingFloat(KONZ, fl, 'KONZ');
-    _OZPZ := ArrayProccessingFloat(OZPZ, fl, 'OZPZ');
-    _ONZPZ := ArrayProccessingFloat(ONZPZ, fl, 'ONZPZ');
+//  _OZ := ArrayProccessingInteger(OZ, fl, 'OZ');
+//  _ONZ := ArrayProccessingInteger(ONZ, fl, 'ONZ');
+
     _KO := ArrayProccessingFloat(KO, fl, 'KO');
-    _KT := ArrayProccessingFloat(KT, fl, 'KT');
-    _SDK := ArrayProccessingFloat(SDK, fl, 'SDK');
-    _SDK1P := ArrayProccessingFloat(SDK1P, fl, 'SDK1P');
-    _SDK1O := ArrayProccessingFloat(SDK1O, fl, 'SDK1O');
-    _SDK2 := ArrayProccessingFloat(SDK2, fl, 'SDK2');
-    _SDK3P := ArrayProccessingFloat(SDK3P, fl, 'SDK3P');
-    _SDK3O := ArrayProccessingFloat(SDK3O, fl, 'SDK3O');
+    _KO_T1 := ArrayProccessingFloat_for_TST(KO, fl, 'KO', 1);
+    _KO_T2 := ArrayProccessingFloat_for_TST(KO, fl, 'KO', 2);
+    _KO_Otkl_T1 := ArrayOtkonenieFloat_for_TST(KO, fl, 'KO', 1);
+    _KO_Otkl_T2 := ArrayOtkonenieFloat_for_TST(KO, fl, 'KO', 2);
+    _KO_Otkl := ArrayOtkonenieFloat_for_TST(KO, fl, 'KO', 0);
 
-    write(f, FormatFloat('######0.###', _T));
+    _SDK := ArrayProccessingFloat(SDK, fl, 'S'); // Это индикатор S !
+    _SDK_T1 := ArrayProccessingFloat_for_TST(SDK, fl, 'S', 1); // Это индикатор S !
+    _SDK_T2 := ArrayProccessingFloat_for_TST(SDK, fl, 'S', 2); // Это индикатор S !
+    _SDK_Otkl_T1 := ArrayOtkonenieFloat_for_TST(SDK, fl, 'S', 1);
+    _SDK_Otkl_T2 := ArrayOtkonenieFloat_for_TST(SDK, fl, 'S', 2);
+    _SDK_Otkl := ArrayOtkonenieFloat_for_TST(SDK, fl, 'S', 0);
+
+    _SPP := ArrayProccessingFloat(SPP, fl, 'SPP');
+    _SPP_T1 := ArrayProccessingFloat_for_TST(SPP, fl, 'SPP', 1);
+    _SPP_T2 := ArrayProccessingFloat_for_TST(SPP, fl, 'SPP', 2);
+    _SPP_Otkl_T1 := ArrayOtkonenieFloat_for_TST(SPP, fl, 'SPP', 1);
+    _SPP_Otkl_T2 := ArrayOtkonenieFloat_for_TST(SPP, fl, 'SPP', 2);
+    _SPP_Otkl := ArrayOtkonenieFloat_for_TST(SPP, fl, 'SPP', 0);
+
+    _SPO := ArrayProccessingFloat(SPO, fl, 'SPO');
+    _SPO_T1 := ArrayProccessingFloat_for_TST(SPO, fl, 'SPO', 1);
+    _SPO_T2 := ArrayProccessingFloat_for_TST(SPO, fl, 'SPO', 2);
+    _SPO_Otkl_T1 := ArrayOtkonenieFloat_for_TST(SPO, fl, 'SPO', 1);
+    _SPO_Otkl_T2 := ArrayOtkonenieFloat_for_TST(SPO, fl, 'SPO', 2);
+    _SPO_Otkl := ArrayOtkonenieFloat_for_TST(SPO, fl, 'SPO', 0);
+
+    _SOP := ArrayProccessingFloat(SOP, fl, 'SOP');
+    _SOP_T1 := ArrayProccessingFloat_for_TST(SOP, fl, 'SOP', 1);
+    _SOP_T2 := ArrayProccessingFloat_for_TST(SOP, fl, 'SOP', 2);
+    _SOP_Otkl_T1 := ArrayOtkonenieFloat_for_TST(SOP, fl, 'SOP', 1);
+    _SOP_Otkl_T2 := ArrayOtkonenieFloat_for_TST(SOP, fl, 'SOP', 2);
+    _SOP_Otkl := ArrayOtkonenieFloat_for_TST(SOP, fl, 'SOP', 0);
+
+    _SOO := ArrayProccessingFloat(SOO, fl, 'SOO');
+    _SOO_T1 := ArrayProccessingFloat_for_TST(SOO, fl, 'SOO', 1);
+    _SOO_T2 := ArrayProccessingFloat_for_TST(SOO, fl, 'SOO', 2);
+    _SOO_Otkl_T1 := ArrayOtkonenieFloat_for_TST(SOO, fl, 'SOO', 1);
+    _SOO_Otkl_T2 := ArrayOtkonenieFloat_for_TST(SOO, fl, 'SOO', 2);
+    _SOO_Otkl := ArrayOtkonenieFloat_for_TST(SOO, fl, 'SOO', 0);
+
+    // Вывод в CSV
+
+    // T
+    if _T_AVG_T1 > -0.0001 then write(f, FormatFloat('######0.###', _T_AVG_T1));
+    write(f, ';');
+    if _T_Otkl_T1 > -0.0001 then write(f, FormatFloat('######0.###', _T_Otkl_T1));
+    write(f, ';');
+    if _T_AVG_T2 > -0.0001 then write(f, FormatFloat('######0.###', _T_AVG_T2));
+    write(f, ';');
+    if _T_Otkl_T2 > -0.0001 then write(f, FormatFloat('######0.###', _T_Otkl_T2));
+    write(f, ';');
+    if _T > -0.0001 then write(f, FormatFloat('######0.###', _T));
+    write(f, ';');
+    if _T_Otkl > -0.0001 then write(f, FormatFloat('######0.###', _T_Otkl));
     write(f, ';');
 
-    for ta := 1 to 6 do
-    begin
-      if _KB[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _KB[ta]));
-      write(f, ';');
-      if _PZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _PZ[ta]));
-      write(f, ';');
-      if _OZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _OZ[ta]));
-      write(f, ';');
-      if _ONZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _ONZ[ta]));
-      write(f, ';');
-      if _KPZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _KPZ[ta]));
-      write(f, ';');
-      if _KOZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _KOZ[ta]));
-      write(f, ';');
-      if _KONZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _KONZ[ta]));
-      write(f, ';');
-      if _OZPZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _OZPZ[ta]));
-      write(f, ';');
-      if _ONZPZ[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _ONZPZ[ta]));
-      write(f, ';');
-      if _KO[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _KO[ta]));
-      write(f, ';');
-      if _KT[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _KT[ta]));
-      write(f, ';');
-      if _SDK[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _SDK[ta]));
-      write(f, ';');
-      if _SDK1P[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _SDK1P[ta]));
-      write(f, ';');
-      if _SDK1O[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _SDK1O[ta]));
-      write(f, ';');
-      if _SDK2[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _SDK2[ta]));
-      write(f, ';');
-      if _SDK3P[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _SDK3P[ta]));
-      write(f, ';');
-      if _SDK3O[ta] > -0.0001 then
-        write(f, FormatFloat('######0.###', _SDK3O[ta]));
-      write(f, ';');
-    end;
-    writeln(f, '');
-
-//    ShowMessage('см файлы results.csv и last_log.txt в директории программы!');
-//    Application.Terminate;
-//    Exit;
+    // Остальные индикаторы в CSV
+    ExcelOneIndicator(f, _KB_T1, _KB_Otkl_T1, _KB_T2, _KB_Otkl_T2, _KB, _KB_Otkl);
+    ExcelOneIndicator(f, _PZ_T1, _PZ_Otkl_T1, _PZ_T2, _PZ_Otkl_T2, _PZ, _PZ_Otkl);
+    ExcelOneIndicator(f, _KO_T1, _KO_Otkl_T1, _KO_T2, _KO_Otkl_T2, _KO, _KO_Otkl);
+    ExcelOneIndicator(f, _SDK_T1, _SDK_Otkl_T1, _SDK_T2, _SDK_Otkl_T2, _SDK, _SDK_Otkl);
+    ExcelOneIndicator(f, _SPP_T1, _SPP_Otkl_T1, _SPP_T2, _SPP_Otkl_T2, _SPP, _SPP_Otkl);
+    ExcelOneIndicator(f, _SPO_T1, _SPO_Otkl_T1, _SPO_T2, _SPO_Otkl_T2, _SPO, _SPO_Otkl);
+    ExcelOneIndicator(f, _SOP_T1, _SOP_Otkl_T1, _SOP_T2, _SOP_Otkl_T2, _SOP, _SOP_Otkl);
+    ExcelOneIndicator(f, _SOO_T1, _SOO_Otkl_T1, _SOO_T2, _SOO_Otkl_T2, _SOO, _SOO_Otkl);
 
   finally
     closeFile(f);

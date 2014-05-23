@@ -13,7 +13,7 @@ object Form2: TForm2
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Position = poScreenCenter
+  Position = poMainFormCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   PixelsPerInch = 96
@@ -150,6 +150,14 @@ object Form2: TForm2
     ParentFont = False
     Visible = False
   end
+  object btn1: TSpeedButton
+    Left = 304
+    Top = 452
+    Width = 369
+    Height = 62
+    Caption = #1044#1083#1103' '#1087#1088#1086#1076#1086#1083#1078#1077#1085#1080#1103' '#1085#1072#1078#1084#1080#1090#1077' '#1082#1083#1072#1074#1080#1096#1091' '#171'Enter'#187
+    OnClick = btn1Click
+  end
   object Edit1: TEdit
     Left = 368
     Top = 48
@@ -227,15 +235,6 @@ object Form2: TForm2
       '58'
       '59'
       '60')
-  end
-  object btn1: TButton
-    Left = 304
-    Top = 452
-    Width = 369
-    Height = 62
-    Caption = #1044#1083#1103' '#1087#1088#1086#1076#1086#1083#1078#1077#1085#1080#1103' '#1085#1072#1078#1084#1080#1090#1077' '#1082#1083#1072#1074#1080#1096#1091' '#171'Enter'#187
-    TabOrder = 3
-    OnClick = s
   end
   object timer5sec: TTimer
     Enabled = False
