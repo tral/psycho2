@@ -7,12 +7,12 @@ uses
   Dialogs, Buttons, ExtCtrls, StdCtrls, Registry;
 
 const
- TasksCount = 12; // сколько всего заданий (в сумме, обоих типов)
+ TasksCount = 6; // сколько всего заданий (в сумме, обоих типов)
  Intervals  = 4; // Сколько всего временных отрезков для аналитики (раньше было 5, в последнем ТЗ стало 4, т.к. длительность 4 минуты)
 
- Version = '1.04';
+ Version = '1.09';
  Title = 'Компьютерная программа «Внимание» (КПВ)';
- IsDemoVersion = TRUE; // Чтобы сбросить счетчик демо-запусков, нужно поменять версию (Version)
+ IsDemoVersion = False; // Чтобы сбросить счетчик демо-запусков, нужно поменять версию (Version)
 
 type
  TMatrix =  array [1..TasksCount] of array [1..Intervals] of Double;
@@ -187,6 +187,7 @@ type
 
     function MyRegReadInteger(dwRootKey: DWord;  const Key, Param: String): Integer;
     procedure MyRegWriteInteger(dwRootKey: DWord; const Key, Param: String; Val:Integer);
+    procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 
   private
       procedure WMNCLBUTTONDOWN(var Msg: TWMNCLButtonDown) ; message WM_NCLBUTTONDOWN;
@@ -199,7 +200,7 @@ var
   Form1: TForm1;
   MyMouse: TMouse;
   oldX, oldY, minY, maxY, maxX : Integer;
-  AllowMoveHandle: boolean;
+  AllowMoveCursor : boolean;
   TestInProgress: boolean;
   IsTestTask: Boolean; // Идет ли тестовое задание?
 
@@ -258,7 +259,6 @@ var
   const aSo : array[1..19] of String = ('Б', 'В', 'Г', 'Д', 'Ж', 'З', 'К', 'Л', 'М', 'Н', 'П', 'Р', 'С', 'Т', 'Ф', 'Х', 'Ц', 'Ч', 'Ш');
   const aAll : array[1..27] of String = ('А', 'Е', 'И', 'О', 'У', 'Э', 'Ю', 'Я', 'Б', 'В', 'Г', 'Д', 'Ж', 'З', 'К', 'Л', 'М', 'Н', 'П', 'Р', 'С', 'Т', 'Ф', 'Х', 'Ц', 'Ч', 'Ш');
 
-
 implementation
 
 uses ToolUnit, Analytics, UAuthForm;
@@ -277,8 +277,9 @@ begin
 
   CurrRowNumber := 0;
   EmptyStringsInARow := 0;
-  LettersVisibility (true);  //
-  TestInProgress := true; //
+  LettersVisibility (true);
+  TestInProgress := true;
+  AllowMoveCursor := True;
   TaskStartTime := GetTickCount;
 end;
 
@@ -299,14 +300,14 @@ begin
   RenderNextRow();
 end;
 
-// Завершение задания по таймеру
+// Завершение задания
 procedure TForm1.FinishTask();
 begin
 
   Timer1.Enabled := false;
   LettersVisibility (false);
   TestInProgress := false;
-  AllowMoveHandle := true;
+  AllowMoveCursor := True;
   TaskFinishTime := GetTickCount;
 
   if (NOT IsTestTask) then
@@ -333,10 +334,9 @@ begin
 
   CurrStep := 'personal';
 
-
   // DEBUG!!! DEL
-  CurrStep := 'next_test_info'; // !!!
-  Form2.NextStep;// !!!
+//  CurrStep := 'next_test_info'; // !!!
+//  Form2.NextStep;// !!!
 
   Form2.ShowModal;
 end;
@@ -355,11 +355,6 @@ procedure TForm1.Button2Click(Sender: TObject);
 var i,j,k : integer;
 begin
 
-
-
-
-
-
   TestType := 2;
   for I := 1 to 1000 do
   begin
@@ -374,16 +369,7 @@ begin
     EmptyStringsInARow := 0;
     RenderNextRow();
 
-
-
-//        getFirstSignalIndex();
-
     getFirstSignalIndex(0);
-
-//    if (j = 40) and(currLetters[j]<>'К') then
-  //  begin
-  //    showmessage('gotcha!');
-  //  end;
 
   end;
 
@@ -411,39 +397,29 @@ procedure TForm1.RenderNextRow();
 //  var point: Tpoint;
 begin
 
-  if (  IsTestTask ) then
-  begin
-   if (CurrRowNumber = 2) then
-   begin
-     FinishTask();
-     Exit;
-   end
-   else Form1.ShiftRows(CurrSignalLetter, CurrPrefix, CurrRowNumber+2);
+  if (IsTestTask)
+  then  // тестовые проходы !!!
+    begin
 
-  end
-  else Form1.ShiftRows(CurrSignalLetter, CurrPrefix, -1);
+      if (CurrRowNumber = 4)
+      then
+        begin
+          FinishTask();
+          Exit;
+        end
+      else
+        Form1.ShiftRows(CurrSignalLetter, CurrPrefix, 2 {внутри переопределится если нужно});
 
-  // Устанавливаем курсор в начало строки
-  Cursor1.Left := 56;
+    end
+  else // боевой тест !!!
+    begin
+      Form1.ShiftRows(CurrSignalLetter, CurrPrefix, -1);
+    end;
+
+  Cursor1.Left := 56; // Устанавливаем курсор в начало строки
 
   // Запишем метку времени установки курсора на первый символ
   aTime[High(aTime)][1] := GetTickCount;
-
-{
-  point.X := 0;
-  point.y := 0;
-  point:= l1.ClientToScreen(point);
-  AllowMoveHandle := false; // чтобы не учитывать последующее перемещение курсора
-  SetCursorPos (point.x,  point.y+12); // поставим на середину буквы по вертикали
-  point:= Form1.ScreenToClient(point);
-  oldX := point.x; // относительно формы
-  oldY := point.y;
-
-  minY := point.y;
-  maxY := point.y + l1.Height -1;
-  maxX := point.x + 24*40; // Эта координата нужна для контроля ситуации, когда зажали кнопку мыши и ломимся вправо
-
-}
 
 end;
 
@@ -476,6 +452,7 @@ begin
   end;
 
   inc(CurrRowNumber); // порядковый номер текущей строки в задании
+  if ((IsTestTask) and (CurrRowNumber=2)) then sgnCnt := 3; // Вилка для тестового прохода (3 строки 2-3-2 сигнальных буквы)
   Form1.RowGenerator(signalLetter, prefix, sgnCnt); // следующая через одну (обновляется currLetters)
   for i := 1 to 40 do tmpLetters[i] := currLetters[i];
   for i := 1 to 40 do currLetters[i] := nextLetters[i];
@@ -517,8 +494,6 @@ begin
 //    if aSignal[High(aSignal)][i]=true then (FindComponent('l'+inttostr(i)) as TLabel).Color := clGreen
 //                                      else (FindComponent('l'+inttostr(i)) as TLabel).Color := clWhite;
 
-
-
 end;
 
 
@@ -528,9 +503,10 @@ begin
 
     Randomize;
 
-    if CurrRowNumber = 1 then sgnCnt:= 1 + Random(5) // случайное число от 1 до 5 - в 1-й строке должна быть хотя бы одна сигнальная буква
-      else if EmptyStringsInARow >= 2 then sgnCnt:= 1 + Random(5) // случайное число от 1 до 5 - т.к. уже были 2 подряд строки без сигнальных букв
-        else if sgnCnt <= 0 then sgnCnt:= Random(6); // случайное число от 0 до 5 - обычное поведение
+    if sgnCnt > 0 then sgnCnt := sgnCnt // если указано явно сколько надо сигнальных букв сгенерить - столько и генерим
+      else if CurrRowNumber = 1 then sgnCnt:= 1 + Random(5) // случайное число от 1 до 5 - в 1-й строке должна быть хотя бы одна сигнальная буква
+        else if EmptyStringsInARow >= 2 then sgnCnt:= 1 + Random(5) // случайное число от 1 до 5 - т.к. уже были 2 подряд строки без сигнальных букв
+          else sgnCnt:= Random(6); // иначе случайное число от 0 до 5 - обычное поведение
 
     if TestType = 1 then
       ToolUnit.GenerateStringForTest1(signalLetter, sgnCnt)
@@ -633,38 +609,47 @@ begin
   begin
 
     Case Key of
+      VK_RIGHT :
+        if AllowMoveCursor then
+        begin
+          // Если дошли до конца строки
+          if ((Cursor1.Left-56) div 24)+1 = 40 then
+          begin
+            TestInProgress := false;
+            RenderNextRow();
+            TestInProgress := true;
+          end
+          else
+          begin
+            // переместим курсор
+            Cursor1.Left := Cursor1.Left + 24;
+
+            // Запишем метку времени этого перемещения
+            // Метка для первого символа записывается при рендере новой строки
+            aTime[High(aTime)][((Cursor1.Left-56) div 24)+1] := GetTickCount;
+          end;
+          AllowMoveCursor := False; // Защита от перемещения курсора удержанием клавиши
+          Exit;
+        end;
      VK_SPACE : begin
                   if aClicks[High(aClicks)][((Cursor1.Left-56) div 24)+1] = 0 then
                       aClicks[High(aClicks)][((Cursor1.Left-56) div 24)+1] := GetTickCount;
                   Exit;
                 end;
-     VK_RIGHT : begin
-                  // Если дошли до конца строки
-                  if ((Cursor1.Left-56) div 24)+1 = 40 then
-                  begin
-                    TestInProgress := false;
-                    RenderNextRow();
-                    TestInProgress := true;
-                  end
-                  else
-                  begin
-                    // переместим курсор
-                    Cursor1.Left := Cursor1.Left + 24;
 
-                    // Запишем метку времени этого перемещения
-                    // Метка для первого символа записывается при рендере новой строки
-                    aTime[High(aTime)][((Cursor1.Left-56) div 24)+1] := GetTickCount;
-                  end;
-                Exit;
-                end;
     End; // case
 
   end
   else
     if ((Key = 13) and (CurrTaskNumber=0)) then ShowStartScreen;
-    
+
 end;
 
+
+procedure TForm1.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+    if Key = VK_RIGHT then AllowMoveCursor := True;
+end;
 
 procedure TForm1.FormMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);

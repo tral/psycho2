@@ -40,8 +40,6 @@ var
   Form2: TForm2;
   CurrStep: string;
 
-
-
 implementation
 
 uses Unit1, ToolUnit;
@@ -51,15 +49,10 @@ var
   // Доступные сигнальные буквы - по числу заданий всего
   AvailSignalLetters : array [1..TasksCount] of string;
 
-
 procedure TForm2.NextStep();
   var i: integer;
   wasError : boolean;
 begin
-//  if (CurrStep = 'welcome') then
-//  begin
- //   CurrStep := 'personal';
- // end;
 
   if (CurrStep = 'personal') then
   begin
@@ -104,30 +97,51 @@ begin
   if (CurrStep = 'training_info') then
   begin
       timer5sec.Enabled:=false;
-      CurrStep := 'training_instruction';
+      CurrStep := 'training_instruction1';
       NextStep();
       Exit;
   end;
 
-  if (CurrStep = 'training_instruction') then
+  if (CurrStep = 'training_instruction1') then
   begin
-    CurrStep := 'training_test';
+    CurrStep := 'training_test1';
     HideAll();
-    CurrSignalLetter := 'н';
-    if TestType=1 then CurrPrefix :=''
-                  else CurrPrefix := RandomLetterG('')+RandomLetterG('')+RandomLetterG('');
-
-    if TestType=1 then
-      Label10.Caption:='Внимательно просматривайте буквы курсором мыши – слева направо строка за строкой. Ищите букву «н». Всякий раз, когда Вы находите букву «н», останавливайте на ней курсор и нажимайте на левую кнопку мыши. '
-      else
-      Label10.Caption:='Внимательно просматривайте буквы курсором мыши – слева направо строка за строкой. Ищите букву «н», которая стоит после идущих рядом букв «'+CurrPrefix+'». Если Вы находите букву «н», стоящую после этого сочетания букв, останавливайте на ней курсор и нажимайте на левую кнопку мыши. Если перед буквой «н» стоит другое сочетание букв, не останавливайте на ней курсор и не нажимайте на левую кнопку мыши.';
+    TestType := 1; // на время тренировочного прохода
+    CurrSignalLetter := 'Н';
+    CurrPrefix :='';
+    Label10.Caption:='Внимательно просматривайте буквы курсором мыши – слева направо строка за строкой. Ищите букву «'+CurrSignalLetter+'». Всякий раз, когда Вы находите букву «'+CurrSignalLetter+'», останавливайте на ней курсор и нажимайте на клавишу «ПРОБЕЛ».';
     Label10.Show;
+    Label11.Caption := 'Тренировочный тест 1';
     Label11.Show;
     btn1.Show;
     Exit;
   end;
 
-  if (CurrStep = 'training_test') then
+  if (CurrStep = 'training_instruction2') then
+  begin
+    CurrStep := 'training_test2';
+    HideAll();
+    TestType := 2; // на время тренировочного прохода
+    CurrSignalLetter := 'Н';
+    CurrPrefix := RandomLetterG('')+RandomLetterG('')+RandomLetterG('');
+    Label10.Caption:='Внимательно просматривайте буквы курсором мыши – слева направо строка за строкой. Ищите букву «'+CurrSignalLetter+'», которая стоит после идущих рядом букв «'+CurrPrefix+'». Если Вы находите букву «'+CurrSignalLetter+'», стоящую после этого сочетания букв, останавливайте на ней курсор и нажимайте на клавишу «ПРОБЕЛ». Если перед буквой «'+CurrSignalLetter+'» стоит другое сочетание букв, не останавливайте на ней курсор и не нажимайте на клавишу «ПРОБЕЛ».';
+    Label10.Show;
+    Label11.Caption := 'Тренировочный тест 2';
+    Label11.Show;
+    btn1.Show;
+    Exit;
+  end;
+
+  if (CurrStep = 'training_test1') then
+  begin
+    CurrStep := 'training_instruction2';
+    HideAll();
+    Form2.Close;
+    Form1.StartTestTask();
+    Exit;
+  end;
+
+  if (CurrStep = 'training_test2') then
   begin
     CurrStep := 'next_test_info';
     HideAll();
@@ -215,7 +229,7 @@ end;
 procedure TForm2.timer5secTimer(Sender: TObject);
 begin
   timer5sec.Enabled:=false;
-  CurrStep := 'training_instruction';
+  CurrStep := 'training_instruction1';
   NextStep();
 end;
 
@@ -280,9 +294,6 @@ begin
     if (TestTypes[i] = 2) then inc(test2fnd);
 
   end;
-
-
-
 
 end;
 

@@ -88,7 +88,7 @@ begin
 end;
 
 function GenerateStringForTest1(signalLetter: String; cnt: integer) :String;
-  var i, idx, j: integer;
+  var i, idx: integer;
 begin
 
   for i := 1 to 40 do
@@ -100,12 +100,7 @@ begin
        idx := InsertLetter(signalLetter,1,40);
 
        // ≈сли уже некуда вставл€ть
-       if idx=0 then
-       begin
-         // ƒополним строку случайными буквами, если остались свободные места
-         for j := 1 to 40 do if currLetters[j] = '' then currLetters[j] := RandomLetter(signalLetter);
-         Exit;
-       end;
+       if idx=0 then Break;
 
        // ќкружим сигнальную букву другими буквами
        SurroundByLetters1(signalLetter, idx);
@@ -118,8 +113,67 @@ begin
 
 end;
 
+
+// ¬ставка фейковых префиксов дл€ теста 2
+procedure InsertFakePrefix(cnt: integer; signalLetter, prefix:String);
+var i, j, idx: integer;
+    tmp: array [1..40] of String;
+    isInserted : boolean;
+begin
+
+    for i := 1 to 40 do tmp[i] := '';
+
+    // ищем куда же вставить можно этот фейковый префикс
+    for i := 1 to 40 do
+    begin
+
+      if (i>=3) then // если уже вставлен 1 фейковый префикс
+        begin
+          if (currLetters[i]=prefix[3]) and (currLetters[i-1]=prefix[2]) and (currLetters[i-2]=prefix[1]) then
+          begin
+            tmp[i] := prefix[3];
+            tmp[i-1] := prefix[2];
+            tmp[i-2] := prefix[1];
+          end;
+        end;
+
+      if (i>=4) then
+        begin
+          if (currLetters[i]=signalLetter) and (currLetters[i-1]=prefix[3]) and (currLetters[i-2]=prefix[2]) and (currLetters[i-3]=prefix[1]) then
+          begin
+            tmp[i] := currLetters[i];
+            tmp[i-1] := currLetters[i-1];
+            tmp[i-2] := currLetters[i-2];
+            tmp[i-3] := currLetters[i-3];
+          end;
+        end;
+
+    end;
+
+    // получили массив tmp в котором пон€тно куда можно вставить фейки (в те позиции, где пустые буквы)
+    // Ќќ! должно быть не менее 3-х пустых мест подр€д!
+    // ј “еперь “јƒј финт ушами - пытаемс€ по рандому вставить несколько раз, если не получитс€ - ну его в пень, не будем вставл€ть
+    j := 0;
+    isInserted := False;
+
+    repeat
+      inc(j);
+      idx := 1 + Random(38); // от 1 до 38 (последн€€ возможность вставить: в позиции 38-39-40)
+
+      if ((tmp[idx]='') and (tmp[idx+1]='') and (tmp[idx+2]='')) then
+      begin
+        isInserted := True;
+        currLetters[idx] := prefix[1];
+        currLetters[idx+1] := prefix[2];
+        currLetters[idx+2] := prefix[3];
+      end;
+
+    until (j > 100) or isInserted;
+
+end;
+
 function GenerateStringForTest2(signalLetter: String; cnt: integer; prefix:string) :String;
-  var i, idx, j: integer;
+  var i, idx, fakeCnt: integer;
 begin
 
   for i := 1 to 40 do
@@ -131,12 +185,7 @@ begin
        idx := InsertLetter(signalLetter, 4, 37); // с 4-й по 40-ю позицию это 4, 37
 
        // ≈сли уже некуда вставл€ть
-       if idx=0 then
-       begin
-         // ƒополним строку случайными буквами, если остались свободные места
-         for j := 1 to 40 do if currLetters[j] = '' then currLetters[j] := RandomLetter(''); // ћожно сигнальную! “.к. она сигнальна€ только если с префиксом!
-         Exit;
-       end;
+       if idx=0 then Break;
 
        // ќкружим сигнальную букву другими буквами
        SurroundByLetters2(signalLetter, idx, prefix);
@@ -147,7 +196,25 @@ begin
   for i := 1 to 40 do
     if currLetters[i] = '' then currLetters[i] := RandomLetter(''); // ћожно сигнальную! “.к. она сигнальна€ только если с префиксом!
 
+  // “еперь самое сложное - как-то вставить ложные префиксы:
+  // если сигнальных в строке 0, то пустых предвар€ющих - равноверо€тно 0,1,2
+  // если сигнальна€ в строке 1,  то пустых предвар€ющих - равноверо€тно 0,1,2
+  // если сигнальных в строке 2, то пустых предвар€ющих - равноверо€тно 0,1
+  // если сигнальных в строке 3, то пустых предвар€ющих - равноверо€тно 0,1
+  // если сигнальных в строке 4 и более, то пустых предвар€ющих - 0
+  fakeCnt := -1;
+  if ((cnt = 3) or (cnt = 2)) then fakeCnt := Random(2); // 0 или 1 шт.
+  if ((cnt = 0) or (cnt = 1)) then fakeCnt := Random(3); // 0, 1 или 2 шт.
+
+  // ну, естественно, как-то мен€ем строку, если надо вставить 1 или 2 фейка
+  if fakeCnt > 0 then
+    for i := 1 to fakeCnt do InsertFakePrefix(cnt, signalLetter, prefix);
+
 end;
+
+
+
+
 
 function RandomLetterS(exclusion:string):string;
   var idx: integer;

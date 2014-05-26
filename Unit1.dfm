@@ -17,6 +17,7 @@ object Form1: TForm1
   Position = poScreenCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
+  OnKeyUp = FormKeyUp
   OnMouseMove = FormMouseMove
   PixelsPerInch = 96
   TextHeight = 13
@@ -2579,7 +2580,7 @@ object Form1: TForm1
   end
   object Timer1: TTimer
     Enabled = False
-    Interval = 240000
+    Interval = 120000
     OnTimer = Timer1Timer
     Left = 113
     Top = 52
